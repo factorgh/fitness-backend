@@ -27,7 +27,6 @@ app.use(express.static("public"));
 app.use(helmet());
 
 // Routes for the application
-app.use(express.json());
 app.use("/users", userRoutes);
 app.use("/recipes", recipeRoutes);
 app.use("/mealplans", mealPlanRoutes);

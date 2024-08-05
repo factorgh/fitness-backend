@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ["0", "1"], required: true, default: "0" },
   savedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],
   mealPlans: [{ type: mongoose.Schema.Types.ObjectId, ref: "MealPlan" }],
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });

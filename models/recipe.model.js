@@ -19,6 +19,7 @@ const recipeSchema = new mongoose.Schema({
   updated_at: { type: Date, default: Date.now },
 });
 
+recipeSchema.index({ name: "text", description: "text" });
 recipeSchema.virtual("averageRating").get(function () {
   if (this.ratings.length === 0) return 0;
   const sum = this.ratings.reduce((acc, rating) => acc + rating.rating, 0);
