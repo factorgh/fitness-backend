@@ -1,23 +1,20 @@
 import jwt from "jsonwebtoken";
-import User from "../models/user.model.js";
 
-export const authenticateUser = async (req, res, next) => {
-  const token = req.header("Authorization").replace("Bearer ", "");
+// Create protection for all routes
+const auth = async (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({
-      _id: decoded._id,
-      "tokens.token": token,
-    });
-
-    if (!user) {
-      throw new Error();
+    const token = req.headers.authorization.split(" ")[1];
+    if (!token) {
+      return res.status(403).json({ message: "Access denied" });
     }
 
-    req.user = user;
-    req.token = token;
+    const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decodedData;
+
     next();
   } catch (error) {
-    res.status(401).json({ message: "Please authenticate." });
+    res.status(401).json({ message: "Invalid token" });
   }
 };
+
+export default auth;
