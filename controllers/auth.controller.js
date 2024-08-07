@@ -5,8 +5,9 @@ import User from "../models/user.model.js";
 // Register a new user
 export const registerUser = async (req, res) => {
   try {
-    const { fullName, username, password, email, role } = req.body;
+    const { fullName, username, password, email } = req.body;
 
+    console.log(req.body);
     // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -15,6 +16,7 @@ export const registerUser = async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 12);
+    console.log(hashedPassword);
 
     // Create a new user
     const user = new User({
@@ -22,16 +24,17 @@ export const registerUser = async (req, res) => {
       username,
       password: hashedPassword,
       email,
-      role,
     });
 
     // Save the user to the database
     await user.save();
+    console.log(user);
 
     // Generate a JWT token
-    const token = jwt.sign({ id: user._id, email: user.email }, "secret", {
+    const token = jwt.sign({ id: user._id }, "My-baby-slept", {
       expiresIn: "1h",
     });
+    console.log(token);
 
     res.status(201).json({ result: user, token });
   } catch (error) {
@@ -42,10 +45,10 @@ export const registerUser = async (req, res) => {
 // Login a user
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     // Find the user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
