@@ -73,3 +73,17 @@ export const addRating = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+// Fetch recipes by meal period
+export const fetchRecipesByMealPeriod = async (req, res) => {
+  try {
+    const { mealPeriod } = req.body;
+    const recipes = await Recipe.find({ mealPeriod });
+    if (!recipes)
+      return res.status(404).send("No recipes found for meal period");
+    res.status(200).send(recipes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Something went wrong");
+  }
+};

@@ -20,9 +20,9 @@ router.post("/login", loginUser);
 router.post("/follow", auth, followUser);
 router.post("/follow", auth, unfollowUser);
 
-router.post("/", createUser);
-router.get("/:id", getUser);
-router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
+router.post("/", auth, createUser);
+router.get("/:id", auth, getUser);
+router.put("/:id", auth, updateUser);
+router.delete("/:id", auth, deleteUser);
 
 export default router;

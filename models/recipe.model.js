@@ -9,6 +9,9 @@ const recipeSchema = new mongoose.Schema({
   title: { type: String, required: true },
   ingredients: { type: [String], required: true },
   instructions: { type: String, required: true },
+  description: { type: String, required: true },
+  facts: { type: String, required: true },
+  imageUrl: { type: String, required: true },
   ratings: [ratingSchema],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -19,11 +22,12 @@ const recipeSchema = new mongoose.Schema({
   updated_at: { type: Date, default: Date.now },
 });
 
-recipeSchema.index({ name: "text", description: "text" });
+recipeSchema.index({ title: "text", instructions: "text" });
 recipeSchema.virtual("averageRating").get(function () {
   if (this.ratings.length === 0) return 0;
   const sum = this.ratings.reduce((acc, rating) => acc + rating.rating, 0);
   return sum / this.ratings.length;
 });
 
-export default mongoose.model("Recipe", recipeSchema);
+const Recipe = mongoose.model("Recipe", recipeSchema);
+export default Recipe;

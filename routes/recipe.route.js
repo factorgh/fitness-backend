@@ -3,16 +3,18 @@ import {
   createRecipe,
   getRecipe,
   updateRecipe,
+  fetchRecipesByMealPeriod,
   deleteRecipe,
 } from "../controllers/recipe.controller.js";
 import recipeModel from "../models/recipe.model.js";
+import auth from "../middleware/auth.js";
 
 const router = express.Router();
-
-router.post("/", createRecipe);
-router.get("/:id", getRecipe);
-router.put("/:id", updateRecipe);
-router.delete("/:id", deleteRecipe);
+router.get("/recipe/mealPeriod", fetchRecipesByMealPeriod);
+router.post("/", auth, createRecipe);
+router.get("/:id", auth, getRecipe);
+router.put("/:id", auth, updateRecipe);
+router.delete("/:id", auth, deleteRecipe);
 
 // Search funtionality
 router.get("/search", async (req, res) => {
