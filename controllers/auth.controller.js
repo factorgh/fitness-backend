@@ -36,7 +36,7 @@ export const registerUser = async (req, res) => {
     });
     console.log(token);
 
-    res.status(200).json({ token, ...user._doc });
+    res.status(200).json({ token, user });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
   }
@@ -68,7 +68,7 @@ export const loginUser = async (req, res) => {
       }
     );
 
-    res.status(200).json({ token, ...user._doc });
+    res.status(200).json({ token, user });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
   }
