@@ -6,11 +6,15 @@ import {
   deleteUser,
   unfollowUser,
   followUser,
+  getMe,
 } from "../controllers/user.controller.js";
 import { registerUser, loginUser } from "../controllers/auth.controller.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
+
+// Get my profile
+router.get("/me", auth, getMe);
 
 // Authentication
 router.post("/register", registerUser);

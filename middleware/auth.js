@@ -7,8 +7,10 @@ const auth = async (req, res, next) => {
     if (!token) {
       return res.status(403).json({ message: "Access denied" });
     }
+    console.log(token);
 
     const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(decodedData);
     req.user = decodedData;
 
     next();
