@@ -13,6 +13,10 @@ const recipeSchema = new mongoose.Schema({
   facts: { type: String, required: true },
   imageUrl: { type: String, required: true },
   ratings: [ratingSchema],
+  period: {
+    type: String,
+    required: true,
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
