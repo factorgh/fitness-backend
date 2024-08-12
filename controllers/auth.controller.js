@@ -38,6 +38,7 @@ export const registerUser = async (req, res) => {
 
     res.status(200).json({ token, user });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -67,7 +68,7 @@ export const loginUser = async (req, res) => {
         expiresIn: "90d",
       }
     );
-
+    console.log(token);
     res.status(200).json({ token, user });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
