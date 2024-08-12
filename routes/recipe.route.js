@@ -67,5 +67,30 @@ router.post("/save-recipe", async (req, res) => {
     return res.status(500).json({ message: "Server error", error });
   }
 });
+// Get saved recipes
+router.get("/saved-recipes/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId).populate("savedRecipes");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json(user.savedRecipes);
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error });
+  }
+});
+router.get("/recipes/by-user", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const recipes = await Recipe.find({ createdBy: userId });
+
+    return res.status(200).json(recipes);
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error });
+  }
+});
 
 export default router;
