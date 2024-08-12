@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  imageUrl: { type: String, unique: true },
+  imageUrl: { type: String, unique: true, default: null },
   role: { type: String, enum: ["0", "1"], required: true, default: "0" },
   savedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],
   mealPlans: [{ type: mongoose.Schema.Types.ObjectId, ref: "MealPlan" }],
