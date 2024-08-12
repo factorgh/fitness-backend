@@ -10,6 +10,7 @@ import {
 import recipeModel from "../models/recipe.model.js";
 import auth from "../middleware/auth.js";
 import Recipe from "../models/recipe.model.js";
+import User from "../models/user.model.js";
 
 const router = express.Router();
 router.get("/recipe/mealPeriod", fetchRecipesByMealPeriod);
@@ -41,6 +42,29 @@ router.get("/search", async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+router.post("/save-recipe", async (req, res) => {
+  const { userId, recipeId } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    const recipe = await Recipe.findById(recipeId);
+
+    if (!user || !recipe) {
+      return res.status(404).json({ message: "User or Recipe not found" });
+    }
+
+    if (!user.savedRecipes.includes(recipeId)) {
+      user.savedRecipes.push(recipeId);
+      await user.save();
+      return res.status(200).json({ message: "Recipe saved successfully" });
+    } else {
+      return res.status(400).json({ message: "Recipe already saved" });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error });
   }
 });
 
