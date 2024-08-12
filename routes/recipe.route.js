@@ -82,7 +82,7 @@ router.get("/saved-recipes/:userId", async (req, res) => {
     return res.status(500).json({ message: "Server error", error });
   }
 });
-router.get("/recipes/by-user", authenticateToken, async (req, res) => {
+router.get("/recipes/by-user", auth, async (req, res) => {
   try {
     const userId = req.user.id;
     const recipes = await Recipe.find({ createdBy: userId });
