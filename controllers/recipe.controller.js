@@ -6,6 +6,7 @@ export const createRecipe = async (req, res) => {
     await recipe.save();
     res.status(201).json(recipe);
   } catch (error) {
+    console.log(error);
     res.status(400).json({ error: error.message });
   }
 };
