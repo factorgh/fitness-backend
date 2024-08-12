@@ -5,13 +5,16 @@ import {
   updateRecipe,
   fetchRecipesByMealPeriod,
   deleteRecipe,
+  getAllRecipe,
 } from "../controllers/recipe.controller.js";
 import recipeModel from "../models/recipe.model.js";
 import auth from "../middleware/auth.js";
+import Recipe from "../models/recipe.model.js";
 
 const router = express.Router();
 router.get("/recipe/mealPeriod", fetchRecipesByMealPeriod);
 router.post("/", auth, createRecipe);
+router.get("/", auth, getAllRecipe);
 router.get("/:id", auth, getRecipe);
 router.put("/:id", auth, updateRecipe);
 router.delete("/:id", auth, deleteRecipe);

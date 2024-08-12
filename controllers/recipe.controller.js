@@ -24,6 +24,18 @@ export const getRecipe = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+export const getAllRecipe = async (req, res) => {
+  try {
+    const recipes = await Recipe.find();
+    console.log(recipes);
+    if (!recipes) {
+      return res.status(404).json({ message: "Recipes not found" });
+    }
+    res.json(recipes);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
 
 export const updateRecipe = async (req, res) => {
   try {
