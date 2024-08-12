@@ -82,13 +82,21 @@ router.get("/saved-recipes/:userId", async (req, res) => {
     return res.status(500).json({ message: "Server error", error });
   }
 });
-router.get("/recipes/by-user", auth, async (req, res) => {
+router.get("/mine/by-user", auth, async (req, res) => {
+  console.log("<------user on by user---->", req.user);
+
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID not found in request" });
+    }
+
+    console.log("-------reqUserId", userId);
     const recipes = await Recipe.find({ createdBy: userId });
 
     return res.status(200).json(recipes);
   } catch (error) {
+    console.error("Error fetching recipes by user:", error);
     return res.status(500).json({ message: "Server error", error });
   }
 });
