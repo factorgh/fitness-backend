@@ -28,7 +28,7 @@ app.use(morgan("dev"));
 // Routes for the application
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/recipes", recipeRoutes);
-app.use("/api/v1/mealplans", mealPlanRoutes);
+app.use("/api/v1/meal-plans", mealPlanRoutes);
 
 const PORT = process.env.PORT || 3000;
 

@@ -7,6 +7,10 @@ import {
   unfollowUser,
   followUser,
   getMe,
+  getTrainerTrainees,
+  getTrainers,
+  getFollowers,
+  getFollowingTrainers,
 } from "../controllers/user.controller.js";
 import { registerUser, loginUser } from "../controllers/auth.controller.js";
 import auth from "../middleware/auth.js";
@@ -22,11 +26,18 @@ router.post("/login", loginUser);
 
 // Follow and unfollow feature
 router.post("/follow", auth, followUser);
-router.post("/follow", auth, unfollowUser);
+router.post("/unfollow", auth, unfollowUser);
 
+// User management
 router.post("/", auth, createUser);
 router.get("/:id", auth, getUser);
 router.put("/:id", auth, updateUser);
 router.delete("/:id", auth, deleteUser);
+
+// endpoints for trainer functionalities
+router.get("/trainer/:id/trainees", auth, getTrainerTrainees);
+router.get("/trainers", auth, getTrainers);
+router.get("/trainer/:trainerId/followers", auth, getFollowers);
+router.get("/trainer/:trainerId/following", auth, getFollowingTrainers);
 
 export default router;

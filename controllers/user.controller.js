@@ -1,7 +1,7 @@
 import User from "../models/user.model.js";
 
+// Fetch the current user
 export const getMe = async (req, res) => {
-  console.log(req.user);
   try {
     const user = await User.findById(req.user.id).populate(
       "savedRecipes mealPlans"
@@ -15,6 +15,7 @@ export const getMe = async (req, res) => {
   }
 };
 
+// Create a new user
 export const createUser = async (req, res) => {
   try {
     const user = new User(req.body);
@@ -25,6 +26,7 @@ export const createUser = async (req, res) => {
   }
 };
 
+// Get user by ID
 export const getUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).populate(
@@ -34,6 +36,26 @@ export const getUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     res.json(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Get trainees following a specific trainer
+export const getTrainerTrainees = async (req, res) => {
+  try {
+    const trainer = await User.findById(req.params.id);
+    if (!trainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
+    if (trainer.role !== "1") {
+      return res.status(400).json({ message: "Invalid trainer role" });
+    }
+    const trainees = await User.find({
+      _id: { $in: trainer.followers },
+      role: "0",
+    });
+    res.json(trainees);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -52,51 +74,20 @@ export const updateUser = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
-export const deleteUser = async (req, res) => {
+// Get all trainers
+export const getTrainers = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    const trainers = await User.find({ role: "1" });
+    if (trainers.length === 0) {
+      return res.status(404).json({ message: "No trainers found" });
     }
-    res.json({ message: "User deleted successfully" });
+    res.json(trainers);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
-// unFollow functionality
-export const unfollowUser = async (req, res) => {
-  try {
-    const { userIdToUnfollow } = req.body;
-    const user = await User.findById(req.user._id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    if (user.role === "1" && user.following.length === 0) {
-      return res.status(400).json({
-        message: "User with role 1 cannot unfollow any user",
-      });
-    }
-
-    if (!user.following.includes(userIdToUnfollow)) {
-      return res.status(400).json({ message: "User not following this user" });
-    }
-
-    user.following = user.following.filter(
-      (id) => id.toString() !== userIdToUnfollow
-    );
-    await user.save();
-
-    res.json({});
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
-// Follow functionality
+// Follow a user
 export const followUser = async (req, res) => {
   try {
     const { userIdToFollow } = req.body;
@@ -106,31 +97,81 @@ export const followUser = async (req, res) => {
     if (!userToFollow) {
       return res.status(404).json({ message: "User to follow not found" });
     }
-
     if (user.role === "1" && userToFollow.role === "1") {
       return res.status(400).json({
         message: "User with role 1 cannot follow another user with role 1",
       });
     }
-
-    if (user.role === "1" && user.following.length >= 1) {
-      return res.status(400).json({
-        message:
-          "User with role 1 can only follow one user with role 0 at a time",
-      });
-    }
-
     if (user.following.includes(userIdToFollow)) {
       return res.status(400).json({ message: "Already following this user" });
     }
-
     user.following.push(userIdToFollow);
     await user.save();
+    res.json({ message: "User followed successfully" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
 
-    res.json({
-      message: "User followed successfully",
-      following: user.following,
-    });
+// Unfollow a user
+export const unfollowUser = async (req, res) => {
+  try {
+    const { userIdToUnfollow } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!user.following.includes(userIdToUnfollow)) {
+      return res.status(400).json({ message: "Not following this user" });
+    }
+    user.following = user.following.filter(
+      (id) => id.toString() !== userIdToUnfollow
+    );
+    await user.save();
+    res.json({ message: "User unfollowed successfully" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Get followers of a trainer
+export const getFollowers = async (req, res) => {
+  try {
+    const trainer = await User.findById(req.params.trainerId).populate(
+      "followers"
+    );
+    if (!trainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
+    res.json(trainer.followers);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Get trainers followed by a specific trainer
+export const getFollowingTrainers = async (req, res) => {
+  try {
+    const trainer = await User.findById(req.params.trainerId).populate(
+      "following"
+    );
+    if (!trainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
+    res.json(trainer.following);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
