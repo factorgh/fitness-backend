@@ -15,7 +15,6 @@ const recipeSchema = new mongoose.Schema({
   ratings: [ratingSchema],
   period: {
     type: String,
-    required: true,
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
