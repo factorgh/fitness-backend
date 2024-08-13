@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import mongoose from "mongoose";
 
 // Fetch the current user
 export const getMe = async (req, res) => {
@@ -88,27 +89,51 @@ export const getTrainers = async (req, res) => {
 };
 
 // Follow a user
+
 export const followUser = async (req, res) => {
   try {
     const { userIdToFollow } = req.body;
-    const user = await User.findById(req.user._id);
+    const currentUserId = req.user.id;
+
+    // Validate userIdToFollow
+    if (!mongoose.Types.ObjectId.isValid(userIdToFollow)) {
+      return res.status(400).json({ message: "Invalid user ID to follow" });
+    }
+
+    const user = await User.findById(currentUserId);
     const userToFollow = await User.findById(userIdToFollow);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     if (!userToFollow) {
       return res.status(404).json({ message: "User to follow not found" });
     }
+
+    // Role validation
     if (user.role === "1" && userToFollow.role === "1") {
       return res.status(400).json({
         message: "User with role 1 cannot follow another user with role 1",
       });
     }
+
+    // Check if already following
     if (user.following.includes(userIdToFollow)) {
       return res.status(400).json({ message: "Already following this user" });
     }
+
+    // Add to following and followers lists
     user.following.push(userIdToFollow);
+    userToFollow.followers.push(currentUserId);
+
+    // Save changes
     await user.save();
+    await userToFollow.save(); // Ensure you save the user being followed
+
     res.json({ message: "User followed successfully" });
   } catch (error) {
+    console.error("Error in followUser:", error); // Add logging for debugging
     res.status(400).json({ error: error.message });
   }
 };
