@@ -25,13 +25,13 @@ export const getMealPlan = async (req, res) => {
 };
 export const getMealPlans = async (req, res) => {
   try {
-    const mealPlan = await MealPlan.find().populate(
-      "createdBy trainees recipes"
+    const mealPlans = await MealPlan.find({ createdBy: req.user.id }).populate(
+      "trainees recipes"
     );
-    if (!mealPlan) {
+    if (!mealPlans) {
       return res.status(404).json({ message: "Meal Plan not found" });
     }
-    res.json(mealPlan);
+    res.json(mealPlans);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
