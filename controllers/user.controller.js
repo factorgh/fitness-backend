@@ -113,7 +113,7 @@ export const followUser = async (req, res) => {
     }
 
     // Role validation
-    if (user.role === "1" && userToFollow.role === "1") {
+    if (user.role === "0" && userToFollow.role === "0") {
       return res.status(400).json({
         message: "User with role 1 cannot follow another user with role 1",
       });
