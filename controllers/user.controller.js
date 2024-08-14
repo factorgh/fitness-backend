@@ -45,6 +45,7 @@ export const getUser = async (req, res) => {
 // Get trainees following a specific trainer
 export const getTrainerTrainees = async (req, res) => {
   try {
+    // Get the trainers id from the request params
     const trainer = await User.findById(req.params.id);
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });

@@ -13,7 +13,20 @@ export const createMealPlan = async (req, res) => {
 export const getMealPlan = async (req, res) => {
   try {
     const mealPlan = await MealPlan.findById(req.params.id).populate(
-      "createdBy assignedUsers mealPeriods.recipes"
+      "createdBy trainees recipes"
+    );
+    if (!mealPlan) {
+      return res.status(404).json({ message: "Meal Plan not found" });
+    }
+    res.json(mealPlan);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+export const getMealPlans = async (req, res) => {
+  try {
+    const mealPlan = await MealPlan.find().populate(
+      "createdBy trainees recipes"
     );
     if (!mealPlan) {
       return res.status(404).json({ message: "Meal Plan not found" });
