@@ -9,9 +9,9 @@ import {
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
-
+router.get("/", auth, getMealPlans);
 router.post("/", auth, createMealPlan);
-router.post("/", auth, getMealPlans);
+
 router.get("/:id", auth, getMealPlan);
 router.put("/:id", auth, updateMealPlan);
 router.delete("/:id", auth, deleteMealPlan);
