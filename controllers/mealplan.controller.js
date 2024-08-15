@@ -25,10 +25,15 @@ export const getMealPlan = async (req, res) => {
 };
 export const getMealPlans = async (req, res) => {
   try {
-    const mealPlans = await MealPlan.find({ createdBy: req.user.id });
-    if (!mealPlans) {
-      return res.status(404).json({ message: "Meal Plan not found" });
+    // Fetch meal plans created by the user, sorted by creation date in descending order
+    const mealPlans = await MealPlan.find({ createdBy: req.user.id }).sort({
+      createdAt: -1,
+    }); // -1 for descending order
+
+    if (!mealPlans || mealPlans.length === 0) {
+      return res.status(404).json({ message: "No meal plans found" });
     }
+
     res.json(mealPlans);
   } catch (error) {
     res.status(400).json({ error: error.message });
