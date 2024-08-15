@@ -48,7 +48,7 @@ const mealPlanSchema = new mongoose.Schema({
   periods: {
     type: [String], // List of selected periods
   },
-  recipes: {
+  recipeAllocations: {
     type: [recipeAllocationSchema], // Array of recipes with time allocations
     default: [],
   },
