@@ -209,6 +209,7 @@ export const searchTrainer = async (req, res) => {
 
     // Basic text search in fullName and specialties
     const trainers = await User.find({
+      role: 1,
       $or: [
         { username: { $regex: query, $options: "i" } },
         { fullName: { $regex: query, $options: "i" } },

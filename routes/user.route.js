@@ -20,6 +20,7 @@ const router = express.Router();
 
 // Get my profile
 router.get("/me", auth, getMe);
+router.get("/trainers/search", auth, searchTrainer);
 
 // Authentication
 router.post("/register", registerUser);
