@@ -1,6 +1,8 @@
 // controllers/notificationController.js
 import Notification from "../models/notifications.js";
 
+import { Socket } from "socket.io";
+
 // Get notifications for a user
 const getNotifications = async (req, res) => {
   try {
@@ -19,6 +21,10 @@ const createNotification = async (req, res) => {
   try {
     const notification = new Notification({ userId, message, type });
     await notification.save();
+
+    // Emit the notification to the user's socket
+    Socket.io.emit(`notification-${userId}`, notification);
+
     res.status(201).json(notification);
   } catch (err) {
     res.status(400).json({ message: err.message });
