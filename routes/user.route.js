@@ -11,6 +11,7 @@ import {
   getTrainers,
   getFollowers,
   getFollowingTrainers,
+  searchTrainer,
 } from "../controllers/user.controller.js";
 import { registerUser, loginUser } from "../controllers/auth.controller.js";
 import auth from "../middleware/auth.js";
