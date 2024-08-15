@@ -1,5 +1,17 @@
 import mongoose from "mongoose";
 
+const recipeAllocationSchema = new Schema({
+  recipeId: {
+    type: Schema.Types.ObjectId,
+    ref: "Recipe",
+    required: true,
+  },
+  allocatedTime: {
+    type: Date, // Or you can use another format depending on your needs
+    required: true,
+  },
+});
+
 const mealPlanSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -36,12 +48,10 @@ const mealPlanSchema = new mongoose.Schema({
   periods: {
     type: [String], // List of selected periods
   },
-  recipes: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Recipe",
-    },
-  ],
+  recipes: {
+    type: [recipeAllocationSchema], // Array of recipes with time allocations
+    default: [],
+  },
   trainees: [
     {
       type: mongoose.Schema.Types.ObjectId,
