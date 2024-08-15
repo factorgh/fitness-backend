@@ -33,6 +33,7 @@ router.post("/", auth, createUser);
 router.get("/:id", auth, getUser);
 router.put("/:id", auth, updateUser);
 router.delete("/:id", auth, deleteUser);
+router.get("/trainers/search", auth, searchTrainer);
 
 // endpoints for trainer functionalities
 router.get("/trainer/:id/trainees", auth, getTrainerTrainees);

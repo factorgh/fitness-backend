@@ -202,3 +202,22 @@ export const deleteUser = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+export const searchTrainer = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    // Basic text search in fullName and specialties
+    const trainers = await User.find({
+      $or: [
+        { username: { $regex: query, $options: "i" } },
+        { fullName: { $regex: query, $options: "i" } },
+      ],
+    });
+
+    res.json(trainers);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
