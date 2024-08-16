@@ -202,7 +202,6 @@ export const deleteUser = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
 export const searchTrainer = async (req, res) => {
   try {
     const { query } = req.query;
@@ -214,7 +213,7 @@ export const searchTrainer = async (req, res) => {
         { username: { $regex: query, $options: "i" } },
         { fullName: { $regex: query, $options: "i" } },
       ],
-    });
+    }).select("fullName username imageUrl"); // Specify fields to include
 
     res.json(trainers);
   } catch (err) {
