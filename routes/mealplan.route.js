@@ -5,6 +5,7 @@ import {
   updateMealPlan,
   deleteMealPlan,
   getMealPlans,
+  getMealPlansByTrainee,
 } from "../controllers/mealplan.controller.js";
 import auth from "../middleware/auth.js";
 
