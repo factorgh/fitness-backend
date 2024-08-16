@@ -65,3 +65,18 @@ export const deleteMealPlan = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+// / Get meal plans for a specific trainee
+export const traineeMealPlan = async (req, res) => {
+  try {
+    const { traineeId } = req.params;
+
+    // Find meal plans where the trainees array contains the traineeId
+    const mealPlans = await MealPlan.find({ trainees: traineeId });
+
+    res.json(mealPlans);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
