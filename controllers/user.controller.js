@@ -164,9 +164,9 @@ export const unfollowUser = async (req, res) => {
 // Get followers of a trainer
 export const getFollowers = async (req, res) => {
   try {
-    const trainer = await User.findById(req.params.trainerId).populate(
-      "followers"
-    );
+    const trainer = await User.findById(req.params.trainerId)
+      .populate("followers")
+      .select("fullName username imageUrl");
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
@@ -179,9 +179,9 @@ export const getFollowers = async (req, res) => {
 // Get trainers followed by a specific trainer
 export const getFollowingTrainers = async (req, res) => {
   try {
-    const trainer = await User.findById(req.params.trainerId).populate(
-      "following"
-    );
+    const trainer = await User.findById(req.params.trainerId)
+      .populate("following")
+      .select("fullName username imageUrl");
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
