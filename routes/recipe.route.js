@@ -6,6 +6,7 @@ import {
   fetchRecipesByMealPeriod,
   deleteRecipe,
   getAllRecipe,
+  savedRecipes,
 } from "../controllers/recipe.controller.js";
 import recipeModel from "../models/recipe.model.js";
 import auth from "../middleware/auth.js";
@@ -33,7 +34,7 @@ router.get("/user/by-user/", auth, async (req, res) => {
       return res.status(400).json({ message: "User ID not found in request" });
     }
 
-    console.log("-------reqUserId", userId);
+    console.log("-------reqUserId---------", userId);
 
     // Fetch recipes created by the user
     const recipes = await Recipe.find({ createdBy: userId });
@@ -53,6 +54,8 @@ router.get("/", auth, getAllRecipe);
 router.get("/:id", auth, getRecipe);
 router.put("/:id", auth, updateRecipe);
 router.delete("/:id", auth, deleteRecipe);
+
+router.get("/user/:userId/saved-recipes", savedRecipes);
 
 // Search funtionality
 router.get("/search", async (req, res) => {
@@ -79,28 +82,6 @@ router.get("/search", async (req, res) => {
   }
 });
 
-router.post("/save-recipe", async (req, res) => {
-  const { userId, recipeId } = req.body;
-
-  try {
-    const user = await User.findById(userId);
-    const recipe = await Recipe.findById(recipeId);
-
-    if (!user || !recipe) {
-      return res.status(404).json({ message: "User or Recipe not found" });
-    }
-
-    if (!user.savedRecipes.includes(recipeId)) {
-      user.savedRecipes.push(recipeId);
-      await user.save();
-      return res.status(200).json({ message: "Recipe saved successfully" });
-    } else {
-      return res.status(400).json({ message: "Recipe already saved" });
-    }
-  } catch (error) {
-    return res.status(500).json({ message: "Server error", error });
-  }
-});
 // Get saved recipes
 router.get("/saved-recipes/:userId", async (req, res) => {
   const { userId } = req.params;
