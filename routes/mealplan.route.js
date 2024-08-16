@@ -5,7 +5,6 @@ import {
   updateMealPlan,
   deleteMealPlan,
   getMealPlans,
-  traineeMealPlan,
 } from "../controllers/mealplan.controller.js";
 import auth from "../middleware/auth.js";
 
@@ -14,7 +13,7 @@ router.get("/", auth, getMealPlans);
 router.post("/", auth, createMealPlan);
 
 // Other routes
-router.get("/trainee/:traineeId", traineeMealPlan);
+router.get("/trainee/:traineeId", getMealPlansByTrainee);
 
 router.get("/:id", auth, getMealPlan);
 router.put("/:id", auth, updateMealPlan);

@@ -67,12 +67,14 @@ export const deleteMealPlan = async (req, res) => {
 };
 
 // / Get meal plans for a specific trainee
-export const traineeMealPlan = async (req, res) => {
+export const getMealPlansByTrainee = async (req, res) => {
   try {
     const { traineeId } = req.params;
 
-    // Find meal plans where the trainees array contains the traineeId
-    const mealPlans = await MealPlan.find({ trainees: traineeId });
+    // Find meal plans where the trainee is part of the trainees array
+    const mealPlans = await MealPlan.find({ trainees: traineeId }).populate(
+      "recipeAllocations.recipeId"
+    );
 
     res.json(mealPlans);
   } catch (err) {
