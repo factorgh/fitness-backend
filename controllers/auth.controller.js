@@ -3,6 +3,19 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
 // Register a new user
+
+const generateUniqueCode = (fullName) => {
+  // Extract first and last letters of the full name
+  const firstLetter = fullName.charAt(0).toUpperCase();
+  const lastLetter = fullName.charAt(fullName.length - 1).toUpperCase();
+
+  // Generate 5 random digits
+  const randomDigits = Math.floor(10000 + Math.random() * 90000).toString(); // 5 digits
+
+  // Combine into the final code
+  return `${firstLetter}${randomDigits}${lastLetter}`;
+};
+
 export const registerUser = async (req, res) => {
   try {
     const { fullName, username, password, email } = req.body;
@@ -18,12 +31,16 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12);
     console.log(hashedPassword);
 
+    // Generate unique code
+    const uniqueCode = generateUniqueCode(fullName);
+
     // Create a new user
     const user = new User({
       fullName,
       username,
       password: hashedPassword,
       email,
+      code: uniqueCode,
     });
 
     // Save the user to the database
