@@ -13,6 +13,8 @@ import {
   getFollowingTrainers,
   searchTrainer,
   traineesDetails,
+  getTrainerByCode,
+  updateRole,
 } from "../controllers/user.controller.js";
 import { registerUser, loginUser } from "../controllers/auth.controller.js";
 import auth from "../middleware/auth.js";
@@ -35,10 +37,12 @@ router.post("/unfollow", auth, unfollowUser);
 router.post("/", auth, createUser);
 router.get("/:id", auth, getUser);
 router.put("/:id", auth, updateUser);
+router.put("/user/role", auth, updateRole);
 router.delete("/:id", auth, deleteUser);
 router.get("/trainers/search", auth, searchTrainer);
 router.get("/mealplan/trainees/details", auth, traineesDetails);
 
+router.get("/trainer/code/:code/follow", auth, getTrainerByCode);
 // endpoints for trainer functionalities
 router.get("/trainer/:id/trainees", auth, getTrainerTrainees);
 router.get("/trainers", auth, getTrainers);

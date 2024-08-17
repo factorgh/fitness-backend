@@ -76,6 +76,20 @@ export const updateUser = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+export const updateRole = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.user.id, req.body, {
+      new: true,
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
 // Get all trainers
 export const getTrainers = async (req, res) => {
   try {
@@ -237,5 +251,27 @@ export const traineesDetails = async (req, res) => {
   } catch (error) {
     console.error("Error fetching trainee details:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getTrainerByCode = async (req, res) => {
+  try {
+    const { code } = req.params; // Assume code is passed as a URL parameter
+
+    // Find the user by code with role 1
+    const user = await User.findOne({ code, role: 1 }).select(
+      "fullName username imageUrl"
+    );
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found or does not have the required role" });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
