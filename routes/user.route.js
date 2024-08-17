@@ -12,6 +12,7 @@ import {
   getFollowers,
   getFollowingTrainers,
   searchTrainer,
+  traineesDetails,
 } from "../controllers/user.controller.js";
 import { registerUser, loginUser } from "../controllers/auth.controller.js";
 import auth from "../middleware/auth.js";
@@ -36,6 +37,7 @@ router.get("/:id", auth, getUser);
 router.put("/:id", auth, updateUser);
 router.delete("/:id", auth, deleteUser);
 router.get("/trainers/search", auth, searchTrainer);
+router.get("/mealplan/trainees/details", auth, traineesDetails);
 
 // endpoints for trainer functionalities
 router.get("/trainer/:id/trainees", auth, getTrainerTrainees);

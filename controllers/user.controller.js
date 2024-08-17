@@ -221,3 +221,21 @@ export const searchTrainer = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// Get details(name,id,imageUrl) of a list of traineees
+
+export const traineesDetails = async (req, res) => {
+  try {
+    const { traineeIds } = req.body;
+
+    // Fetch trainee details from the database
+    const trainees = await User.find({
+      _id: { $in: traineeIds },
+    }).select("id fullName username imageUrl"); // Select only the fields you need
+
+    res.status(200).json({ trainees });
+  } catch (error) {
+    console.error("Error fetching trainee details:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
