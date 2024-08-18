@@ -1,14 +1,16 @@
 import MealPlan from "../models/mealplan.model.js";
+import notification from "../models/notifications.js";
+import moment from "moment";
 
-export const createMealPlan = async (req, res) => {
-  try {
-    const mealPlan = new MealPlan(req.body);
-    await mealPlan.save();
-    res.status(201).json(mealPlan);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
+// export const createMealPlan = async (req, res) => {
+//   try {
+//     const mealPlan = new MealPlan(req.body);
+//     await mealPlan.save();
+//     res.status(201).json(mealPlan);
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// };
 
 export const getMealPlan = async (req, res) => {
   try {
@@ -81,4 +83,80 @@ export const getMealPlansByTrainee = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+// /Notification system management
+
+export const createMealPlan = async (req, res) => {
+  try {
+    const {
+      name,
+      duration,
+      startDate,
+      endDate,
+      days,
+      periods,
+      recipeAllocations,
+      trainees,
+    } = req.body;
+
+    const mealPlan = new MealPlan({
+      name,
+      duration,
+      startDate,
+      endDate,
+      days,
+      periods,
+      recipeAllocations,
+      trainees,
+      createdBy: req.user.id,
+    });
+
+    await mealPlan.save();
+
+    // Notify trainees about the new meal plan
+    for (const traineeId of trainees) {
+      await createNotificationForMealPlan(mealPlan, traineeId);
+    }
+
+    res.status(201).json(mealPlan);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const createNotificationForMealPlan = async (mealPlan, traineeId) => {
+  const { startDate, endDate, days, recipeAllocations } = mealPlan;
+
+  // Iterate through each day within the selected range
+  for (let day of days) {
+    let currentDate = moment(startDate);
+    const dayIndex = getDayIndex(day);
+
+    while (currentDate.isSameOrBefore(endDate)) {
+      // Check if the current date matches the day index
+      if (currentDate.day() === dayIndex) {
+        for (let allocation of recipeAllocations) {
+          const message = `Reminder: Your meal plan includes ${allocation.recipeId} at ${allocation.allocatedTime}.`;
+
+          const notification = new Notification({
+            userId: traineeId,
+            message,
+            type: "MealPlanReminder",
+            createdAt: currentDate.toDate(),
+          });
+
+          await notification.save();
+        }
+      }
+
+      // Move to the next day
+      currentDate.add(1, "day");
+    }
+  }
+};
+
+const getDayIndex = (day) => {
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  return daysOfWeek.indexOf(day);
 };
