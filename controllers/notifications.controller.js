@@ -5,13 +5,16 @@ import { Socket } from "socket.io";
 
 // Get notifications for a user
 const getNotifications = async (req, res) => {
+  const { userId } = req.params;
   try {
-    const notifications = await Notification.find({
-      userId: req.params.userId,
+    const notifications = await Notification.find({ userId }).sort({
+      createdAt: -1,
     });
-    res.json(notifications);
+    res.status(200).json(notifications);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching notifications", error: err });
   }
 };
 
@@ -45,6 +48,8 @@ const markAsRead = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+//  Get all notifications for a user in descending order of creation date
 
 export default {
   markAsRead,
