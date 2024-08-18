@@ -104,7 +104,7 @@ export const fetchRecipesByMealPeriod = async (req, res) => {
 
 export const savedRecipes = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const { userId } = req.params.userId;
 
     // Find the user and populate the savedRecipes field
     const user = await User.findById(userId).populate("savedRecipes");
