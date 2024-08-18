@@ -20,7 +20,7 @@ const router = express.Router();
 router.get("/user/by-user/", auth, async (req, res) => {
   console.log("<------user on by user---->", req.user);
   // Inside your route handler
-  const userId = req.user?.id;
+  const userId = req.user.id;
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(400).json({ message: "Invalid User ID" });
   }
@@ -49,8 +49,10 @@ router.get("/user/by-user/", auth, async (req, res) => {
 });
 
 router.get("/recipe/mealPeriod", fetchRecipesByMealPeriod);
+
 router.post("/", auth, createRecipe);
 router.get("/", auth, getAllRecipe);
+router.post("/save-recipe", savedRecipes);
 router.get("/:id", auth, getRecipe);
 router.put("/:id", auth, updateRecipe);
 router.delete("/:id", auth, deleteRecipe);
@@ -82,20 +84,20 @@ router.get("/search", async (req, res) => {
   }
 });
 
-// Get saved recipes
-router.get("/saved-recipes/:userId", async (req, res) => {
-  const { userId } = req.params;
+// // Get saved recipes
+// router.get("/saved-recipes/:userId", async (req, res) => {
+//   const { userId } = req.params;
 
-  try {
-    const user = await User.findById(userId).populate("savedRecipes");
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//   try {
+//     const user = await User.findById(userId).populate("savedRecipes");
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-    return res.status(200).json(user.savedRecipes);
-  } catch (error) {
-    return res.status(500).json({ message: "Server error", error });
-  }
-});
+//     return res.status(200).json(user.savedRecipes);
+//   } catch (error) {
+//     return res.status(500).json({ message: "Server error", error });
+//   }
+// });
 
 export default router;
