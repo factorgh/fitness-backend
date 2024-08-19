@@ -104,7 +104,7 @@ export const addRating = async (req, res) => {
     if (existingRating) {
       existingRating.rating = rating;
     } else {
-      recipe.ratings.push({ user: req.user._id, rating });
+      recipe.ratings.push({ user: req.user.id, rating });
     }
 
     await recipe.save();
