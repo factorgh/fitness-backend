@@ -8,6 +8,7 @@ import {
   getAllRecipe,
   savedRecipes,
   addRating,
+  getRecipesForFollowedUsers,
 } from "../controllers/recipe.controller.js";
 import recipeModel from "../models/recipe.model.js";
 import auth from "../middleware/auth.js";
