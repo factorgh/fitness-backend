@@ -73,7 +73,7 @@ export const addRating = async (req, res) => {
     }
 
     const existingRating = recipe.ratings.find(
-      (r) => r.user.toString() === req.user._id.toString()
+      (r) => r.user.toString() === req.user.id.toString()
     );
     if (existingRating) {
       existingRating.rating = rating;
@@ -118,5 +118,37 @@ export const savedRecipes = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get recipes of users u are following
+export const getRecipesForFollowedUsers = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Fetch the user document to get the list of followed users
+    const user = await User.findById(userId).populate("following");
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const followedUsers = user.following;
+
+    if (!followedUsers.length) {
+      return res.status(404).json({ message: "No followed users found." });
+    }
+
+    // Fetch recipes for all followed users
+    const recipes = [];
+    for (const followedUser of followedUsers) {
+      const userRecipes = await Recipe.find({
+        _id: { $in: followedUser.savedRecipes },
+      });
+      recipes.push(...userRecipes);
+    }
+
+    return res.status(200).json(recipes);
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error });
   }
 };
