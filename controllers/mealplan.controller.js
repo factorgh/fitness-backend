@@ -74,9 +74,7 @@ export const getMealPlansByTrainee = async (req, res) => {
     const { traineeId } = req.params;
 
     // Find meal plans where the trainee is part of the trainees array
-    const mealPlans = await MealPlan.find({ trainees: traineeId }).populate(
-      "recipeAllocations.recipeId"
-    );
+    const mealPlans = await MealPlan.find({ trainees: traineeId });
 
     res.json(mealPlans);
   } catch (err) {
