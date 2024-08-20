@@ -393,3 +393,24 @@ export const getFollowersByRole = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+export const removeTrainerFollower = async (req, res) => {
+  try {
+    const trainerId = req.user.id;
+    const { followerId } = req.params;
+
+    // Find the trainer and update their followers array
+    await User.findByIdAndUpdate(trainerId, {
+      $pull: { followers: followerId },
+    });
+
+    //  remove the trainer from the follower's following list
+    await User.findByIdAndUpdate(followerId, {
+      $pull: { following: trainerId },
+    });
+
+    res.status(200).json({ message: "Follower removed successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to remove follower" });
+  }
+};

@@ -18,6 +18,7 @@ import {
   getTopTrainers,
   getTraineesFromTrainerMealPlans,
   getFollowersByRole,
+  removeTrainerFollower,
 } from "../controllers/user.controller.js";
 import { registerUser, loginUser } from "../controllers/auth.controller.js";
 import auth from "../middleware/auth.js";
@@ -52,6 +53,7 @@ router.delete("/:id", auth, deleteUser);
 router.get("/trainers/search", auth, searchTrainer);
 router.get("/trainers/top-rated-trainers", auth, getTopTrainers);
 router.get("/mealplan/trainees/details", auth, traineesDetails);
+router.delete("/user/followers/:followerId", auth, removeTrainerFollower);
 
 router.get("/trainer/code/:code/follow", auth, getTrainerByCode);
 // endpoints for trainer functionalities
