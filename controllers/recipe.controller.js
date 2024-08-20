@@ -199,3 +199,26 @@ export const getRecipesForFollowedUsers = async (req, res) => {
     return res.status(500).json({ message: "Server error", error });
   }
 };
+
+// Get top rated recipes
+export const getTopRatedRecipes = async (req, res) => {
+  try {
+    // Fetch all recipes or a subset, e.g., latest 100 for performance
+    const recipes = await Recipe.find();
+
+    // Calculate averageRating (it's a virtual field, so it's available here)
+    const recipesWithRating = recipes
+      .map((recipe) => ({
+        ...recipe.toObject(),
+        averageRating: recipe.averageRating,
+      }))
+      // Sort by averageRating in descending order
+      .sort((a, b) => b.averageRating - a.averageRating)
+      // Limit to the top 5 recipes
+      .slice(0, 5);
+
+    res.json(recipesWithRating);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};

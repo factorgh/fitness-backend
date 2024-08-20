@@ -15,6 +15,7 @@ import {
   traineesDetails,
   getTrainerByCode,
   updateRole,
+  getTopTrainers,
 } from "../controllers/user.controller.js";
 import { registerUser, loginUser } from "../controllers/auth.controller.js";
 import auth from "../middleware/auth.js";
@@ -40,6 +41,7 @@ router.put("/:id", auth, updateUser);
 router.put("/user/role", auth, updateRole);
 router.delete("/:id", auth, deleteUser);
 router.get("/trainers/search", auth, searchTrainer);
+router.get("/trainers/top-rated-trainers", auth, getTopTrainers);
 router.get("/mealplan/trainees/details", auth, traineesDetails);
 
 router.get("/trainer/code/:code/follow", auth, getTrainerByCode);

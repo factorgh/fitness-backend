@@ -275,3 +275,40 @@ export const getTrainerByCode = async (req, res) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+// Get 10 top rated trainers
+export const getTopTrainers = async (req, res) => {
+  try {
+    const topTrainers = await User.aggregate([
+      // Match users with the role of "1" (trainers)
+      {
+        $match: { role: "1" },
+      },
+      //  Add a field for the number of followers
+      {
+        $addFields: { followersCount: { $size: "$followers" } },
+      },
+      //  Sort by the number of followers in descending order
+      {
+        $sort: { followersCount: -1 },
+      },
+      //  Limit to the top 10 trainers
+      {
+        $limit: 10,
+      },
+      //  Return only the required fields
+      {
+        $project: {
+          fullName: 1,
+          username: 1,
+          imageUrl: 1,
+          followersCount: 1,
+        },
+      },
+    ]);
+
+    res.json(topTrainers);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};

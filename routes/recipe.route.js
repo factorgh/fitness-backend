@@ -9,6 +9,7 @@ import {
   savedRecipes,
   addRating,
   getRecipesForFollowedUsers,
+  getTopRatedRecipes,
 } from "../controllers/recipe.controller.js";
 import recipeModel from "../models/recipe.model.js";
 import auth from "../middleware/auth.js";
@@ -53,6 +54,7 @@ router.get("/user/by-user/", auth, async (req, res) => {
 router.get("/recipe/mealPeriod", fetchRecipesByMealPeriod);
 router.post("/rate-recipe/recipe/:id", auth, addRating);
 router.get("/user/:userId/followed-recipes", getRecipesForFollowedUsers);
+router.get("/recipe/highest-rated", auth, getTopRatedRecipes);
 
 router.post("/", auth, createRecipe);
 router.get("/", auth, getAllRecipe);
