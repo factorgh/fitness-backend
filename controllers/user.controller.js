@@ -1,3 +1,4 @@
+import MealPlan from "../models/mealplan.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
@@ -302,12 +303,92 @@ export const getTopTrainers = async (req, res) => {
           fullName: 1,
           username: 1,
           imageUrl: 1,
+          email: 1,
           followersCount: 1,
         },
       },
     ]);
 
     res.json(topTrainers);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Get trainees of a specific trainer with specific meal plan assigned to themexport const getTraineesFromTrainerMealPlans = async (req, res) => {
+
+export const getTraineesFromTrainerMealPlans = async (req, res) => {
+  console.log("---- Checking if user has access to the meal plan", req.user.id);
+
+  try {
+    // Convert userId to an ObjectId
+    let userId;
+    try {
+      userId = req.user.id;
+    } catch (err) {
+      return res.status(400).json({ error: "Invalid user ID format." });
+    }
+
+    // Step 1: Find all MealPlans created by the current user (trainer)
+    const mealPlans = await MealPlan.find({ createdBy: userId })
+      .select("trainees") // Only get the trainees field
+      .exec();
+
+    // Log the fetched meal plans
+    console.log("Fetched MealPlans:", mealPlans);
+
+    // Step 2: Extract all trainee IDs from the fetched meal plans
+    const traineeIds = mealPlans.flatMap((plan) => plan.trainees);
+
+    // Log extracted trainee IDs
+    console.log("Extracted Trainee IDs:", traineeIds);
+
+    if (traineeIds.length === 0) {
+      return res.status(404).json({ message: "No trainees found." });
+    }
+
+    // Step 3: Find users with role "0" and matching IDs
+    const trainees = await User.find({
+      _id: { $in: traineeIds },
+      role: "0",
+    }).exec();
+
+    // Log the final result
+    console.log("Found Trainees:", trainees);
+
+    // Step 4: Send the resulting list of trainees back to the client
+    return res.status(200).json(trainees);
+  } catch (error) {
+    console.error("Error fetching trainees: ", error);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while fetching trainees." });
+  }
+};
+
+// Get followers of a trainer, distinguishing by role
+export const getFollowersByRole = async (req, res) => {
+  try {
+    const { trainerId, role } = req.params;
+
+    // Find the trainer by ID
+    const trainer = await User.findById(trainerId);
+    if (!trainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
+
+    // Validate role
+    if (role !== "0" && role !== "1") {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+
+    // Fetch followers with the specified role
+    const followers = await User.find({
+      _id: { $in: trainer.followers },
+      role: role,
+    });
+
+    res.json(followers);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

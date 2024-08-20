@@ -16,6 +16,8 @@ import {
   getTrainerByCode,
   updateRole,
   getTopTrainers,
+  getTraineesFromTrainerMealPlans,
+  getFollowersByRole,
 } from "../controllers/user.controller.js";
 import { registerUser, loginUser } from "../controllers/auth.controller.js";
 import auth from "../middleware/auth.js";
@@ -25,6 +27,13 @@ const router = express.Router();
 // Get my profile
 router.get("/me", auth, getMe);
 router.get("/trainers/search", auth, searchTrainer);
+router.get(
+  "/meal-plans/trainees/assigned-trainees",
+  auth,
+  getTraineesFromTrainerMealPlans
+);
+
+router.get("/trainer/:trainerId/followers/:role", getFollowersByRole);
 
 // Authentication
 router.post("/register", registerUser);
