@@ -94,17 +94,20 @@ export const addRating = async (req, res) => {
   try {
     const { rating } = req.body;
     const recipe = await Recipe.findById(req.params.id);
+    console.log(recipe);
     if (!recipe) {
       return res.status(404).json({ message: "Recipe not found" });
     }
 
+    console.log(req.user.id);
     const existingRating = recipe.ratings.find(
-      (r) => r.user.toString() === req.user.id.toString()
+      (r) => r.userId.toString() === req.user.id.toString()
     );
+    console.log("------------existingRating-----------", existingRating);
     if (existingRating) {
       existingRating.rating = rating;
     } else {
-      recipe.ratings.push({ user: req.user.id, rating });
+      recipe.ratings.push({ userId: req.user.id, rating });
     }
 
     await recipe.save();
