@@ -204,7 +204,7 @@ export const getRecipesForFollowedUsers = async (req, res) => {
 export const getTopRatedRecipes = async (req, res) => {
   try {
     // Fetch all recipes or a subset, e.g., latest 100 for performance
-    const recipes = await Recipe.find();
+    const recipes = await Recipe.find().populate("createdBy");
 
     // Calculate averageRating (it's a virtual field, so it's available here)
     const recipesWithRating = recipes
@@ -216,7 +216,6 @@ export const getTopRatedRecipes = async (req, res) => {
       .sort((a, b) => b.averageRating - a.averageRating)
       // Limit to the top 5 recipes
       .slice(0, 5);
-
     res.json(recipesWithRating);
   } catch (error) {
     res.status(400).json({ error: error.message });

@@ -48,13 +48,13 @@ const mealPlanSchema = new Schema(
       },
     },
     days: {
-      type: [String], // List of selected days (e.g., ['Monday', 'Tuesday'])
+      type: [String],
     },
     periods: {
-      type: [String], // List of selected periods (e.g., ['Breakfast', 'Lunch'])
+      type: [String],
     },
     recipeAllocations: {
-      type: [recipeAllocationSchema], // Array of RecipeAllocation sub-documents
+      type: [recipeAllocationSchema],
       default: [],
     },
     trainees: [
