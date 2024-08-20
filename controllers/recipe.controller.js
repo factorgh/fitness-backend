@@ -203,10 +203,10 @@ export const getRecipesForFollowedUsers = async (req, res) => {
 // Get top rated recipes
 export const getTopRatedRecipes = async (req, res) => {
   try {
-    // Fetch all recipes or a subset, e.g., latest 100 for performance
+    // Fetch all recipes
     const recipes = await Recipe.find().populate("createdBy");
 
-    // Calculate averageRating (it's a virtual field, so it's available here)
+    // Calculate averageRating
     const recipesWithRating = recipes
       .map((recipe) => ({
         ...recipe.toObject(),
@@ -219,5 +219,61 @@ export const getTopRatedRecipes = async (req, res) => {
     res.json(recipesWithRating);
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+// Save a recipe to a user's saved recipes
+
+export const saveRecipe = async (req, res) => {
+  try {
+    const { userId, recipeId } = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the recipe is already saved
+    if (user.savedRecipes.includes(recipeId)) {
+      return res.status(400).json({ message: "Recipe already saved" });
+    }
+
+    // Add the recipe to the savedRecipes array
+    user.savedRecipes.push(recipeId);
+
+    await user.save();
+
+    res.status(200).json({ message: "Recipe saved successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Remove a saved recipe
+export const removeSavedRecipe = async (req, res) => {
+  try {
+    const { userId, recipeId } = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove the recipe from the savedRecipes array
+    user.savedRecipes = user.savedRecipes.filter(
+      (id) => id.toString() !== recipeId
+    );
+
+    await user.save();
+
+    res.status(200).json({ message: "Recipe removed from saved list" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
