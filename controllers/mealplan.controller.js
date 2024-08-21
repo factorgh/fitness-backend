@@ -98,6 +98,20 @@ export const createMealPlan = async (req, res) => {
       trainees,
     } = req.body;
 
+    // Check for existing meal plans that conflict with the new one
+    const conflictingMealPlans = await MealPlan.find({
+      trainees: { $in: trainees },
+      days: { $in: days },
+    });
+
+    if (conflictingMealPlans.length > 0) {
+      return res.status(400).json({
+        error:
+          "A meal plan already exists for the selected trainees on the specified days. Please choose different days.",
+      });
+    }
+
+    // Create the new meal plan since no conflicts were found
     const mealPlan = new MealPlan({
       name,
       duration,
@@ -147,6 +161,8 @@ const createNotificationForMealPlan = async (mealPlan, traineeId) => {
           await notification.save();
         }
       }
+
+      console.log("-------creaeted ");
 
       // Move to the next day
       currentDate.add(1, "day");
