@@ -55,7 +55,7 @@ router.get("/user/by-user/", auth, async (req, res) => {
 
 router.post("/recipe/save", saveRecipe);
 router.post("/recipe/remove", removeSavedRecipe);
-router.get("/recipe/mealPeriod", fetchRecipesByMealPeriod);
+router.get("/recipe/mealPeriod", auth, fetchRecipesByMealPeriod);
 router.post("/rate-recipe/recipe/:id", auth, addRating);
 router.get("/user/:userId/followed-recipes", getRecipesForFollowedUsers);
 router.get("/recipe/highest-rated", auth, getTopRatedRecipes);
