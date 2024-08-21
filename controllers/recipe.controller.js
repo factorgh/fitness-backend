@@ -126,20 +126,30 @@ export const addRating = async (req, res) => {
 export const fetchRecipesByMealPeriod = async (req, res) => {
   try {
     const { mealPeriod } = req.body;
-    const recipes = await Recipe.find({ mealPeriod }).lean(); // Convert to plain JavaScript objects
-    if (!recipes.length) {
-      return res.status(404).send("No recipes found for meal period");
+
+    // Validate the mealPeriod
+    if (!mealPeriod) {
+      return res.status(400).send("Meal period is required");
     }
 
-    // Add averageRating to each recipe
+    // Fetch recipes by mealPeriod
+    const recipes = await Recipe.find({ mealPeriod }).lean();
+
+    // Check if recipes were found
+    if (!recipes.length) {
+      return res.status(404).send("No recipes found for the given meal period");
+    }
+
+    // Add averageRating to each recipe (if needed)
     recipes.forEach((recipe) => {
-      recipe.averageRating = recipe.averageRating;
+      recipe.averageRating = recipe.averageRating || 0; // Default to 0 if not present
     });
 
+    // Send the recipes
     res.status(200).send(recipes);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Something went wrong");
+    res.status(500).send("An error occurred while fetching recipes");
   }
 };
 
