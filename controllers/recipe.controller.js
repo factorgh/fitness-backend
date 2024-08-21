@@ -133,9 +133,7 @@ export const fetchRecipesByMealPeriod = async (req, res) => {
     }
 
     // Fetch recipes by mealPeriod
-    const recipes = await Recipe.find({ period: mealPeriod })
-      .populate("createdBy")
-      .lean();
+    const recipes = await Recipe.find({ period: mealPeriod }).lean();
 
     // Check if recipes were found
     if (!recipes.length) {
