@@ -1,5 +1,6 @@
 import MealPlan from "../models/mealplan.model.js";
-import notification from "../models/notifications.js";
+import Notification from "../models/notifications.js";
+
 import moment from "moment";
 
 // export const createMealPlan = async (req, res) => {
@@ -101,13 +102,21 @@ export const createMealPlan = async (req, res) => {
     // Check for existing meal plans that conflict with the new one
     const conflictingMealPlans = await MealPlan.find({
       trainees: { $in: trainees },
-      days: { $in: days },
+      $or: [
+        {
+          startDate: { $lte: new Date(endDate) },
+          endDate: { $gte: new Date(startDate) },
+        },
+        {
+          days: { $in: days },
+        },
+      ],
     });
 
     if (conflictingMealPlans.length > 0) {
       return res.status(400).json({
         error:
-          "A meal plan already exists for the selected trainees on the specified days. Please choose different days.",
+          "A meal plan already exists for the selected trainees within the specified date range or on the selected days. Please choose a different date range or days.",
       });
     }
 
@@ -128,7 +137,7 @@ export const createMealPlan = async (req, res) => {
 
     // Notify trainees about the new meal plan
     for (const traineeId of trainees) {
-      await createNotificationForMealPlan(mealPlan, traineeId);
+      await createNotificationForMealPlan(mealPlan, traineeId, req.user.id);
     }
 
     res.status(201).json(mealPlan);
@@ -137,40 +146,31 @@ export const createMealPlan = async (req, res) => {
   }
 };
 
-const createNotificationForMealPlan = async (mealPlan, traineeId) => {
+const createNotificationForMealPlan = async (
+  mealPlan,
+  traineeId,
+  createdBy
+) => {
   const { startDate, endDate, days, recipeAllocations } = mealPlan;
 
-  // Iterate through each day within the selected range
-  for (let day of days) {
-    let currentDate = moment(startDate);
-    const dayIndex = getDayIndex(day);
+  // Create a single notification message for the meal plan
+  const message = `You have a new meal plan from ${moment(startDate).format(
+    "YYYY-MM-DD"
+  )} to ${moment(endDate).format(
+    "YYYY-MM-DD"
+  )}. It includes meals on ${days.join(", ")}.`;
 
-    while (currentDate.isSameOrBefore(endDate)) {
-      // Check if the current date matches the day index
-      if (currentDate.day() === dayIndex) {
-        for (let allocation of recipeAllocations) {
-          const message = `Reminder: Your meal plan includes ${allocation.recipeId} at ${allocation.allocatedTime}.`;
+  // Create a notification object
+  const notification = new Notification({
+    createdBy: createdBy,
 
-          const notification = new Notification({
-            userId: traineeId,
-            message,
-            type: "MealPlanReminder",
-            createdAt: currentDate.toDate(),
-          });
+    createdAt: new Date(), // Set to the current date and time
+    userId: traineeId,
+    message,
+    type: "MealPlanReminder",
+    createdAt: new Date(), // Set to the current date and time
+  });
 
-          await notification.save();
-        }
-      }
-
-      console.log("-------creaeted ");
-
-      // Move to the next day
-      currentDate.add(1, "day");
-    }
-  }
-};
-
-const getDayIndex = (day) => {
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  return daysOfWeek.indexOf(day);
+  // Save the notification to the database
+  await notification.save();
 };
