@@ -102,21 +102,29 @@ export const createMealPlan = async (req, res) => {
     const conflictingMealPlans = await MealPlan.find({
       trainees: { $in: trainees },
       $or: [
-        // First condition: Check if the date ranges overlap
         {
-          startDate: { $lte: new Date(endDate) },
-          endDate: { $gte: new Date(startDate) },
-          // Second condition: Only check for day overlap if date ranges overlap
-          days: { $in: days },
+          // Check if the date ranges overlap and the days overlap
+          $and: [
+            { startDate: { $lte: new Date(endDate) } },
+            { endDate: { $gte: new Date(startDate) } },
+            { days: { $in: days } },
+          ],
         },
       ],
     });
 
     if (conflictingMealPlans.length > 0) {
-      return res.status(400).json({
-        error:
-          "A meal plan already exists for the selected trainees within the specified date range or on the selected days. Please choose a different date range or days.",
-      });
+      // Check if conflicting plans involve the same trainees
+      const conflictWithSameTrainees = conflictingMealPlans.some((plan) =>
+        plan.trainees.some((trainee) => trainees.includes(trainee))
+      );
+
+      if (conflictWithSameTrainees) {
+        return res.status(400).json({
+          error:
+            "A meal plan already exists for the selected trainees within the specified date range or on the selected days. Please choose a different date range or days.",
+        });
+      }
     }
 
     // Create the new meal plan since no conflicts were found
@@ -144,7 +152,6 @@ export const createMealPlan = async (req, res) => {
     res.status(500).json({ message: "Error creating meal plan", error: err });
   }
 };
-
 const createNotificationForMealPlan = async (
   mealPlan,
   traineeId,
