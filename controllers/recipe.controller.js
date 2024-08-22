@@ -293,8 +293,7 @@ export const getRecipesByTopTrainer = async (req, res) => {
     const userId = req.params.userId;
     const recipes = await Recipe.find({ createdBy: userId })
       .sort({ createdAt: -1 })
-      .limit(5)
-      .populate("createdBy", "fullName username email imageUrl");
+      .limit(5);
 
     res.json(recipes);
   } catch (err) {
