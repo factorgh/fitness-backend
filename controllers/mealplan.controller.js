@@ -85,7 +85,6 @@ export const getMealPlansByTrainee = async (req, res) => {
 };
 
 // /Notification system management
-
 export const createMealPlan = async (req, res) => {
   try {
     const {
@@ -103,11 +102,11 @@ export const createMealPlan = async (req, res) => {
     const conflictingMealPlans = await MealPlan.find({
       trainees: { $in: trainees },
       $or: [
+        // First condition: Check if the date ranges overlap
         {
           startDate: { $lte: new Date(endDate) },
           endDate: { $gte: new Date(startDate) },
-        },
-        {
+          // Second condition: Only check for day overlap if date ranges overlap
           days: { $in: days },
         },
       ],
@@ -141,8 +140,8 @@ export const createMealPlan = async (req, res) => {
     }
 
     res.status(201).json(mealPlan);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Error creating meal plan", error: err });
   }
 };
 
