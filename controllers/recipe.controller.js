@@ -287,3 +287,17 @@ export const removeSavedRecipe = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getRecipesByTopTrainer = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const recipes = await Recipe.find({ createdBy: userId })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("createdBy", "fullName username email imageUrl");
+
+    res.json(recipes);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching recipes" });
+  }
+};

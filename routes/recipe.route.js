@@ -12,6 +12,7 @@ import {
   getTopRatedRecipes,
   saveRecipe,
   removeSavedRecipe,
+  getRecipesByTopTrainer,
 } from "../controllers/recipe.controller.js";
 import recipeModel from "../models/recipe.model.js";
 import auth from "../middleware/auth.js";
@@ -59,6 +60,7 @@ router.get("/recipe/mealPeriod", auth, fetchRecipesByMealPeriod);
 router.post("/rate-recipe/recipe/:id", auth, addRating);
 router.get("/user/:userId/followed-recipes", getRecipesForFollowedUsers);
 router.get("/recipe/highest-rated", auth, getTopRatedRecipes);
+router.get("/top-trainers/recipe/:userId", auth, getRecipesByTopTrainer);
 
 router.post("/", auth, createRecipe);
 router.get("/", auth, getAllRecipe);
