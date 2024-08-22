@@ -105,8 +105,7 @@ export const getTrainers = async (req, res) => {
 
 export const followUser = async (req, res) => {
   try {
-    const { userIdToFollow } = req.body;
-    const currentUserId = req.user.id;
+    const { currentUserId, userIdToFollow } = req.body;
 
     // Validate userIdToFollow
     if (!mongoose.Types.ObjectId.isValid(userIdToFollow)) {
