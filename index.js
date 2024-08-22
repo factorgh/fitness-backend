@@ -25,7 +25,7 @@ const app = express();
 const server = http.createServer(app);
 
 // Setup Socket.io
-const io = new Server(server, {
+export const io = new Server(server, {
   cors: {
     origin: "*", // Allow requests from any origin, modify for production
     methods: ["GET", "POST"],
