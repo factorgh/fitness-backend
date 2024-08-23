@@ -4,12 +4,12 @@ import { sendEmail } from "../utils/mailer.js";
 const router = express.Router();
 
 router.post("/send-email", async (req, res) => {
-  const { from, to, userEmail } = req.body;
+  const { to, userEmail } = req.body;
 
   try {
     const emailData = {
       to,
-      from,
+      from: "burchellsbale@gmail.com",
       subject: `Fitness Trainer Request (Fitness Recipe)`,
       html: `
   <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; background-color: #f4f4f4;">

@@ -18,18 +18,6 @@ const transporter = nodemailer.createTransport({
 export const sendEmail = async (emailData) => {
   try {
     await transporter.sendMail(emailData);
-    // const html = `
-    //   <h1>${subject}</h1>
-    //   <div>${text}</div>
-    // `;
-
-    // await transporter.sendMail({
-    //   from,
-    //   to,
-    //   subject,
-    //   text,
-    //   html,
-    // });
 
     console.log("Email sent successfully");
   } catch (error) {
