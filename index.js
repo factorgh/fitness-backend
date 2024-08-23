@@ -40,7 +40,14 @@ app.use(express.static("public"));
 app.use(helmet());
 app.use(morgan("dev"));
 
-app.use("api/v1/email", emailRoutes);
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something went wrong!");
+});
+
+// Email routes
+app.use("/api/v1/email", emailRoutes);
 
 // Routes for the application
 app.use("/api/v1/users", userRoutes);
