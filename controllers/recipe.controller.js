@@ -214,7 +214,7 @@ export const getRecipesForFollowedUsers = async (req, res) => {
 export const getTopRatedRecipes = async (req, res) => {
   try {
     // Fetch all recipes
-    const recipes = await Recipe.find().populate("createdBy");
+    const recipes = await Recipe.find();
 
     // Calculate averageRating
     const recipesWithRating = recipes
