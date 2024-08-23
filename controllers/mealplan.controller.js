@@ -173,7 +173,7 @@ const createNotificationForMealPlan = async (
     createdAt: new Date(), // Set to the current date and time
     userId: traineeId,
     message,
-    type: "MealPlanReminder",
+    type: "Meal Plan Reminder",
     createdAt: new Date(), // Set to the current date and time
   });
 
