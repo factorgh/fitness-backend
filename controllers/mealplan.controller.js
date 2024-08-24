@@ -6,7 +6,7 @@ import moment from "moment";
 export const getMealPlan = async (req, res) => {
   try {
     const mealPlan = await MealPlan.findById(req.params.id).populate(
-      "createdBy trainees recipes"
+      "createdBy trainees"
     );
     if (!mealPlan) {
       return res.status(404).json({ message: "Meal Plan not found" });
@@ -79,28 +79,23 @@ export const updateMealPlan = async (req, res) => {
     const updatedMealPlan = await MealPlan.findByIdAndUpdate(
       mealPlanId,
       {
-        $set: {
-          name,
-          duration,
-          startDate,
-          endDate,
-          days,
-          periods,
-          recipeAllocations,
-          trainees,
-        },
+        name,
+        duration,
+        startDate,
+        endDate,
+        days,
+        periods,
+        recipeAllocations,
+        trainees,
       },
-      { new: true } // Return the updated document
+      { new: true }
     );
 
     if (!updatedMealPlan) {
       return res.status(404).json({ error: "Meal plan not found" });
     }
 
-    return res.status(200).json({
-      message: "Meal plan updated successfully",
-      mealPlan: updatedMealPlan,
-    });
+    return res.status(200).json(updatedMealPlan);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update meal plan" });

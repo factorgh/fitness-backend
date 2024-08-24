@@ -17,7 +17,7 @@ router.post("/", auth, createMealPlan);
 router.get("/trainee/:traineeId", getMealPlansByTrainee);
 
 router.get("/:id", auth, getMealPlan);
-router.put("/:id", auth, updateMealPlan);
+router.put("/:mealPlanId", auth, updateMealPlan);
 router.delete("/:id", auth, deleteMealPlan);
 
 export default router;
