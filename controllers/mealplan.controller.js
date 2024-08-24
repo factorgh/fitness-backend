@@ -46,19 +46,12 @@ export const updateMealPlan = async (req, res) => {
       trainees,
     } = req.body;
 
-    // Find the existing meal plan by ID
-    const existingMealPlan = await MealPlan.findById(mealPlanId);
-    if (!existingMealPlan) {
-      return res.status(404).json({ error: "Meal plan not found" });
-    }
-
     // Check for existing meal plans that conflict with the updated one
     const conflictingMealPlans = await MealPlan.find({
       _id: { $ne: mealPlanId }, // Exclude the current meal plan being updated
       trainees: { $in: trainees },
       $or: [
         {
-          // Check if the date ranges overlap and the days overlap
           $and: [
             { startDate: { $lte: new Date(endDate) } },
             { endDate: { $gte: new Date(startDate) } },
@@ -83,21 +76,30 @@ export const updateMealPlan = async (req, res) => {
     }
 
     // Update the meal plan with new details
-    existingMealPlan.name = name;
-    existingMealPlan.duration = duration;
-    existingMealPlan.startDate = startDate;
-    existingMealPlan.endDate = endDate;
-    existingMealPlan.days = days;
-    existingMealPlan.periods = periods;
-    existingMealPlan.recipeAllocations = recipeAllocations;
-    existingMealPlan.trainees = trainees;
+    const updatedMealPlan = await MealPlan.findByIdAndUpdate(
+      mealPlanId,
+      {
+        $set: {
+          name,
+          duration,
+          startDate,
+          endDate,
+          days,
+          periods,
+          recipeAllocations,
+          trainees,
+        },
+      },
+      { new: true } // Return the updated document
+    );
 
-    // Save the updated meal plan
-    await existingMealPlan.save();
+    if (!updatedMealPlan) {
+      return res.status(404).json({ error: "Meal plan not found" });
+    }
 
     return res.status(200).json({
       message: "Meal plan updated successfully",
-      mealPlan: existingMealPlan,
+      mealPlan: updatedMealPlan,
     });
   } catch (error) {
     console.error(error);
