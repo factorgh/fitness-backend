@@ -3,16 +3,6 @@ import Notification from "../models/notifications.js";
 
 import moment from "moment";
 
-// export const createMealPlan = async (req, res) => {
-//   try {
-//     const mealPlan = new MealPlan(req.body);
-//     await mealPlan.save();
-//     res.status(201).json(mealPlan);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// };
-
 export const getMealPlan = async (req, res) => {
   try {
     const mealPlan = await MealPlan.findById(req.params.id).populate(
@@ -42,18 +32,76 @@ export const getMealPlans = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
 export const updateMealPlan = async (req, res) => {
   try {
-    const mealPlan = await MealPlan.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!mealPlan) {
-      return res.status(404).json({ message: "Meal Plan not found" });
+    const { mealPlanId } = req.params;
+    const {
+      name,
+      duration,
+      startDate,
+      endDate,
+      days,
+      periods,
+      recipeAllocations,
+      trainees,
+    } = req.body;
+
+    // Find the existing meal plan by ID
+    const existingMealPlan = await MealPlan.findById(mealPlanId);
+    if (!existingMealPlan) {
+      return res.status(404).json({ error: "Meal plan not found" });
     }
-    res.json(mealPlan);
+
+    // Check for existing meal plans that conflict with the updated one
+    const conflictingMealPlans = await MealPlan.find({
+      _id: { $ne: mealPlanId }, // Exclude the current meal plan being updated
+      trainees: { $in: trainees },
+      $or: [
+        {
+          // Check if the date ranges overlap and the days overlap
+          $and: [
+            { startDate: { $lte: new Date(endDate) } },
+            { endDate: { $gte: new Date(startDate) } },
+            { days: { $in: days } },
+          ],
+        },
+      ],
+    });
+
+    if (conflictingMealPlans.length > 0) {
+      // Check if conflicting plans involve the same trainees
+      const conflictWithSameTrainees = conflictingMealPlans.some((plan) =>
+        plan.trainees.some((trainee) => trainees.includes(trainee))
+      );
+
+      if (conflictWithSameTrainees) {
+        return res.status(400).json({
+          error:
+            "A meal plan already exists for the selected trainees within the specified date range or on the selected days. Please choose a different date range or days.",
+        });
+      }
+    }
+
+    // Update the meal plan with new details
+    existingMealPlan.name = name;
+    existingMealPlan.duration = duration;
+    existingMealPlan.startDate = startDate;
+    existingMealPlan.endDate = endDate;
+    existingMealPlan.days = days;
+    existingMealPlan.periods = periods;
+    existingMealPlan.recipeAllocations = recipeAllocations;
+    existingMealPlan.trainees = trainees;
+
+    // Save the updated meal plan
+    await existingMealPlan.save();
+
+    return res.status(200).json({
+      message: "Meal plan updated successfully",
+      mealPlan: existingMealPlan,
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update meal plan" });
   }
 };
 
