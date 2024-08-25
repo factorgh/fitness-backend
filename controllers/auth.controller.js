@@ -59,13 +59,12 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
-
 // Login a user
 export const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // Find the user by email
+    // Find the user by username
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -77,17 +76,23 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    // Check if the user has role "0" and is following someone
+    if (user.role === "0" && user.following.length === 0) {
+      return res.status(400).json({
+        message: "User must be following at least one trainer to log in.",
+      });
+    }
+
     // Generate a JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "90d",
     });
-    console.log(token);
+
     res.status(200).json({ token, user });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
-
 // Change password fuctionalaity
 export const changePassword = async (req, res) => {
   const { email, oldPassword, newPassword } = req.body;
