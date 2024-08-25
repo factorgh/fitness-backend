@@ -78,7 +78,7 @@ export const loginUser = async (req, res) => {
 
     // Check if the user has role "0" and is following someone
     if (user.role === "0" && user.following.length === 0) {
-      return res.status(400).json({
+      return res.status(403).json({
         message: "User must be following at least one trainer to log in.",
       });
     }
