@@ -109,6 +109,7 @@ export const changePassword = async (req, res) => {
 
     // Hash the new password
     const salt = await bcrypt.genSalt(12);
+    // Update user password
     user.password = await bcrypt.hash(newPassword, salt);
 
     // Save the updated user
@@ -119,3 +120,5 @@ export const changePassword = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// Forgot password coming soon
