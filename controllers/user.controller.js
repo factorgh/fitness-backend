@@ -410,3 +410,5 @@ export const removeTrainerFollower = async (req, res) => {
     res.status(500).json({ error: "Failed to remove follower" });
   }
 };
+
+// Follow feature new approach

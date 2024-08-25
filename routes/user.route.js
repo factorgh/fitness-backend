@@ -20,7 +20,11 @@ import {
   getFollowersByRole,
   removeTrainerFollower,
 } from "../controllers/user.controller.js";
-import { registerUser, loginUser } from "../controllers/auth.controller.js";
+import {
+  registerUser,
+  loginUser,
+  changePassword,
+} from "../controllers/auth.controller.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
@@ -39,6 +43,7 @@ router.get("/trainer/:trainerId/followers/:role", getFollowersByRole);
 // Authentication
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.post("/change-password", auth, changePassword);
 
 // Follow and unfollow feature
 router.post("/follow", auth, followUser);
