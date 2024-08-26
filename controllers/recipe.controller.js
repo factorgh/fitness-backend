@@ -39,7 +39,7 @@ export const getRecipe = async (req, res) => {
 // Get all recipes
 export const getAllRecipe = async (req, res) => {
   try {
-    const currentUserId = req.user._id; // Assuming req.user contains the authenticated user
+    const currentUserId = req.user.id; // Assuming req.user contains the authenticated user
 
     // Find recipes that are not created by the current user
     const recipes = await Recipe.find({
