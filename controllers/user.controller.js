@@ -266,7 +266,7 @@ export const getTrainerByCode = async (req, res) => {
         .json({ message: "User not found or does not have the required role" });
     }
 
-    res.status(200).json({ user });
+    res.status(200).json(user);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Something went wrong" });
