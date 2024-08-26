@@ -39,7 +39,12 @@ export const getRecipe = async (req, res) => {
 // Get all recipes
 export const getAllRecipe = async (req, res) => {
   try {
-    const recipes = await Recipe.find().lean(); // Convert to plain JavaScript objects
+    const currentUserId = req.user._id; // Assuming req.user contains the authenticated user
+
+    // Find recipes that are not created by the current user
+    const recipes = await Recipe.find({
+      createdBy: { $ne: currentUserId },
+    }).lean(); // Adjust the query to exclude the current user's recipes
 
     if (!recipes.length) {
       return res.status(404).json({ message: "Recipes not found" });
