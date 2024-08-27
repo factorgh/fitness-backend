@@ -10,7 +10,7 @@ const recipeAllocationSchema = new Schema({
     required: true,
   },
   allocatedTime: {
-    type: Date, // Use Date or another format as per your requirement
+    type: Date,
     required: true,
   },
 });

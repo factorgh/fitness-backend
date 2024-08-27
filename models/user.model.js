@@ -7,6 +7,12 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     imageUrl: { type: String, default: null },
+    status: {
+      type: String,
+      required: true,
+      default: "public",
+      enum: ["public", "private"], // Enum to restrict values
+    },
     role: { type: String, enum: ["0", "1"], required: true, default: "0" },
     savedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],
     mealPlans: [{ type: mongoose.Schema.Types.ObjectId, ref: "MealPlan" }],

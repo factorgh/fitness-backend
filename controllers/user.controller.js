@@ -27,13 +27,26 @@ export const createUser = async (req, res) => {
   }
 };
 
-// Get user by ID
 export const getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).select("-password"); // Exclude password
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    // Check if the user's status is 'private'
+    if (user.status === "private") {
+      // Return only the selected fields for private users
+      const privateUserData = {
+        _id: user._id,
+        username: user.username,
+        imageUrl: user.imageUrl,
+        fullName: user.fullName,
+      };
+      return res.json(privateUserData);
+    }
+
+    // If the status is not 'private', return the full user data
     res.json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -91,11 +104,26 @@ export const updateRole = async (req, res) => {
 // Get all trainers
 export const getTrainers = async (req, res) => {
   try {
-    const trainers = await User.find({ role: "1" });
+    const trainers = await User.find({ role: "1" }).select("-password"); // Exclude password
+
     if (trainers.length === 0) {
       return res.status(404).json({ message: "No trainers found" });
     }
-    res.json(trainers);
+
+    // Map through the trainers and restrict fields for those with private status
+    const result = trainers.map((trainer) => {
+      if (trainer.status === "private") {
+        return {
+          _id: trainer.id,
+          username: trainer.username,
+          imageUrl: trainer.imageUrl,
+          fullName: trainer.fullName,
+        };
+      }
+      return trainer;
+    });
+
+    res.json(result);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

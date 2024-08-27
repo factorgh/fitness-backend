@@ -36,15 +36,15 @@ export const getRecipe = async (req, res) => {
   }
 };
 
-// Get all recipes
 export const getAllRecipe = async (req, res) => {
   try {
     const currentUserId = req.user.id; // Assuming req.user contains the authenticated user
 
-    // Find recipes that are not created by the current user
+    // Find recipes that are public and not created by the current user
     const recipes = await Recipe.find({
       createdBy: { $ne: currentUserId },
-    }).lean(); // Adjust the query to exclude the current user's recipes
+      status: "public", // Only include recipes with a status of "public"
+    }).lean();
 
     if (!recipes.length) {
       return res.status(404).json({ message: "Recipes not found" });
@@ -296,9 +296,20 @@ export const removeSavedRecipe = async (req, res) => {
 export const getRecipesByTopTrainer = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const recipes = await Recipe.find({ createdBy: userId })
+
+    // Find the top trainer's recipes that are public
+    const recipes = await Recipe.find({
+      createdBy: userId,
+      status: "public", // Only include recipes with a status of "public"
+    })
       .sort({ createdAt: -1 })
       .limit(5);
+
+    if (!recipes.length) {
+      return res
+        .status(404)
+        .json({ message: "No public recipes found for this trainer" });
+    }
 
     res.json(recipes);
   } catch (err) {
