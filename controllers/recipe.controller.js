@@ -219,7 +219,9 @@ export const getRecipesForFollowedUsers = async (req, res) => {
 export const getTopRatedRecipes = async (req, res) => {
   try {
     // Fetch all recipes
-    const recipes = await Recipe.find();
+    const recipes = await Recipe.find({
+      status: "public", // Only include public recipes
+    });
 
     // Calculate averageRating
     const recipesWithRating = recipes
