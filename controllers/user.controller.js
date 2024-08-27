@@ -301,7 +301,6 @@ export const getTrainerByCode = async (req, res) => {
   }
 };
 
-// Get 10 top rated trainers
 // Get 10 top-rated trainers excluding the current user
 export const getTopTrainers = async (req, res) => {
   try {
@@ -322,7 +321,7 @@ export const getTopTrainers = async (req, res) => {
       },
       // Exclude the current user from the top trainers list
       {
-        $match: { _id: { $ne: mongoose.Types.ObjectId(currentUserId) } },
+        $match: { _id: { $ne: new mongoose.Types.ObjectId(currentUserId) } },
       },
       // Limit to the top 10 trainers
       {
