@@ -302,26 +302,33 @@ export const getTrainerByCode = async (req, res) => {
 };
 
 // Get 10 top rated trainers
+// Get 10 top-rated trainers excluding the current user
 export const getTopTrainers = async (req, res) => {
   try {
+    const currentUserId = req.user.id; // Assuming req.user contains the authenticated user ID
+
     const topTrainers = await User.aggregate([
       // Match users with the role of "1" (trainers)
       {
         $match: { role: "1" },
       },
-      //  Add a field for the number of followers
+      // Add a field for the number of followers
       {
         $addFields: { followersCount: { $size: "$followers" } },
       },
-      //  Sort by the number of followers in descending order
+      // Sort by the number of followers in descending order
       {
         $sort: { followersCount: -1 },
       },
-      //  Limit to the top 10 trainers
+      // Exclude the current user from the top trainers list
+      {
+        $match: { _id: { $ne: mongoose.Types.ObjectId(currentUserId) } },
+      },
+      // Limit to the top 10 trainers
       {
         $limit: 10,
       },
-      //  Return only the required fields
+      // Return only the required fields
       {
         $project: {
           fullName: 1,
