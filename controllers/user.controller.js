@@ -154,7 +154,7 @@ export const followUser = async (req, res) => {
     // Role validation
     if (user.role === "0" && userToFollow.role === "0") {
       return res.status(400).json({
-        message: "User with role 1 cannot follow another user with role 1",
+        message: " Trainee cannot follow another user who is a trainee",
       });
     }
 
@@ -304,7 +304,7 @@ export const getTrainerByCode = async (req, res) => {
 // Get 10 top-rated trainers excluding the current user
 export const getTopTrainers = async (req, res) => {
   try {
-    const currentUserId = req.user.id; // Assuming req.user contains the authenticated user ID
+    const currentUserId = req.user.id;
 
     const topTrainers = await User.aggregate([
       // Match users with the role of "1" (trainers)

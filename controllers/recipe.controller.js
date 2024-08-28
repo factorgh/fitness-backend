@@ -218,12 +218,24 @@ export const getRecipesForFollowedUsers = async (req, res) => {
 // Get top rated recipes
 export const getTopRatedRecipes = async (req, res) => {
   try {
-    // Fetch all recipes
-    const recipes = await Recipe.find({
-      status: "public", // Only include public recipes
-    });
+    // 1. Retrieve the current user's ID from the request object
+    // This assumes that authentication middleware has populated req.user
+    const currentUserId = req.user?.id;
 
-    // Calculate averageRating
+    // 2. Build the query object
+    const query = {
+      status: "public", // Only include public recipes
+    };
+
+    // 3. If the user is authenticated, exclude their own recipes
+    if (currentUserId) {
+      query.creator = { $ne: currentUserId }; // $ne stands for "not equal"
+    }
+
+    // 4. Fetch recipes from the database based on the query
+    const recipes = await Recipe.find(query);
+
+    //5. Calculate averageRating
     const recipesWithRating = recipes
       .map((recipe) => ({
         ...recipe.toObject(),
