@@ -220,7 +220,7 @@ export const getTopRatedRecipes = async (req, res) => {
   try {
     // 1. Retrieve the current user's ID from the request object
     // This assumes that authentication middleware has populated req.user
-    const currentUserId = req.user?.id;
+    const currentUserId = req.user.id;
 
     // 2. Build the query object
     const query = {
