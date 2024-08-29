@@ -29,9 +29,12 @@ const RecurrenceSchema = new mongoose.Schema({
       message: "customDays must be provided for custom_weekly recurrence",
     },
   },
+  customDates: {
+    type: [Date], // Array of numbers representing days of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    default: [], // Only used if option is 'custom_weekly'
+  },
 });
 
-// Meal schema
 // Meal schema
 const MealSchema = new mongoose.Schema({
   mealType: {
@@ -57,57 +60,60 @@ const MealSchema = new mongoose.Schema({
 });
 
 // Meal Plan schema
-const MealPlanSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  trainees: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Trainee",
+const MealPlanSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
-  ],
-  duration: {
-    type: String,
-    enum: [
-      "Does Not Repeat",
-      "Week",
-      "Month",
-      "Quarter",
-      "Half-Year",
-      "Year",
-      "Custom",
-    ],
-    default: "Does Not Repeat",
-  },
-  startDate: {
-    type: Date,
-    required: true,
-  },
-  endDate: {
-    type: Date,
-    required: true,
-  },
-  datesArray: {
-    type: [Date],
-    validate: {
-      validator: function (v) {
-        // Ensure dates in the array are within the startDate and endDate
-        return v.every(
-          (date) => date >= this.startDate && date <= this.endDate
-        );
+    trainees: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Trainee",
       },
-      message: "Dates must be between startDate and endDate",
+    ],
+    duration: {
+      type: String,
+      enum: [
+        "Does Not Repeat",
+        "Week",
+        "Month",
+        "Quarter",
+        "Half-Year",
+        "Year",
+        "Custom",
+      ],
+      default: "Does Not Repeat",
+    },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
+    },
+    datesArray: {
+      type: [Date],
+      validate: {
+        validator: function (v) {
+          // Ensure dates in the array are within the startDate and endDate
+          return v.every(
+            (date) => date >= this.startDate && date <= this.endDate
+          );
+        },
+        message: "Dates must be between startDate and endDate",
+      },
+    },
+    meals: [MealSchema],
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
-  meals: [MealSchema],
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-});
+  { timestamps: true }
+);
 
 const MealPlan = mongoose.model("MealPlan", MealPlanSchema);
 export default MealPlan;
