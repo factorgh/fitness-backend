@@ -4,7 +4,8 @@ import helmet from "helmet";
 import mongoose from "mongoose";
 import morgan from "morgan";
 import { Server } from "socket.io";
-import http from "http"; // Add this import
+import http from "http";
+import emailRoutes from "./routes/email.route.js";
 
 import userRoutes from "./routes/user.route.js";
 import recipeRoutes from "./routes/recipe.route.js";
@@ -25,7 +26,7 @@ const app = express();
 const server = http.createServer(app);
 
 // Setup Socket.io
-const io = new Server(server, {
+export const io = new Server(server, {
   cors: {
     origin: "*", // Allow requests from any origin, modify for production
     methods: ["GET", "POST"],
@@ -38,6 +39,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(helmet());
 app.use(morgan("dev"));
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something went wrong!");
+});
+
+// Email routes
+app.use("/api/v1/email", emailRoutes);
 
 // Routes for the application
 app.use("/api/v1/users", userRoutes);

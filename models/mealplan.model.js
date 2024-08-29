@@ -1,81 +1,113 @@
 import mongoose from "mongoose";
 
-const { Schema } = mongoose;
-
-// Define the RecipeAllocation schema
-const recipeAllocationSchema = new Schema({
-  recipeId: {
-    type: Schema.Types.ObjectId,
-    ref: "Recipe",
+// Recurrence schema
+// Updated Recurrence schema (no mealType here)
+const RecurrenceSchema = new mongoose.Schema({
+  option: {
+    type: String,
+    enum: ["every_day", "weekly", "custom_weekly", "monthly", "bi_weekly"],
     required: true,
   },
-  allocatedTime: {
-    type: Date, // Use Date or another format as per your requirement
+  date: {
+    type: Date,
+    required: true,
+  },
+  exceptions: {
+    type: [Date],
+    default: [],
+  },
+  customDays: {
+    type: [Number], // Array of numbers representing days of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    default: [], // Only used if option is 'custom_weekly'
+    validate: {
+      validator: function (v) {
+        // Ensure customDays is only set when option is 'custom_weekly'
+        return (
+          this.option !== "custom_weekly" || (Array.isArray(v) && v.length > 0)
+        );
+      },
+      message: "customDays must be provided for custom_weekly recurrence",
+    },
+  },
+});
+
+// Meal schema
+// Meal schema
+const MealSchema = new mongoose.Schema({
+  mealType: {
+    type: String,
+    enum: ["breakfast", "lunch", "dinner", "snack"],
+    required: true,
+  },
+  recipes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Recipe",
+    },
+  ],
+  timeOfDay: {
+    type: String, // e.g., "08:00 AM", "12:00 PM", "07:00 PM"
+    required: true,
+  },
+  recurrence: RecurrenceSchema,
+  date: {
+    type: Date,
     required: true,
   },
 });
 
-// Define the MealPlan schema
-const mealPlanSchema = new Schema(
-  {
-    name: {
-      type: String,
-      required: true,
+// Meal Plan schema
+const MealPlanSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  trainees: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Trainee",
     },
-    duration: {
-      type: String,
-      enum: [
-        "Does Not Repeat",
-        "Week",
-        "Month",
-        "Quarter",
-        "Half-Year",
-        "Year",
-        "Custom",
-      ],
-      default: "Does Not Repeat",
-    },
-    startDate: {
-      type: Date,
-      required: function () {
-        return this.duration === "Custom";
-      },
-    },
-    endDate: {
-      type: Date,
-      required: function () {
-        return this.duration === "Custom";
-      },
-    },
-    days: {
-      type: [String], // List of selected days (e.g., ['Monday', 'Tuesday'])
-    },
-    periods: {
-      type: [String], // List of selected periods (e.g., ['Breakfast', 'Lunch'])
-    },
-    recipeAllocations: {
-      type: [recipeAllocationSchema], // Array of RecipeAllocation sub-documents
-      default: [],
-    },
-    trainees: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        // Reference to the User schema
-      },
+  ],
+  duration: {
+    type: String,
+    enum: [
+      "Does Not Repeat",
+      "Week",
+      "Month",
+      "Quarter",
+      "Half-Year",
+      "Year",
+      "Custom",
     ],
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+    default: "Does Not Repeat",
+  },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
+  datesArray: {
+    type: [Date],
+    validate: {
+      validator: function (v) {
+        // Ensure dates in the array are within the startDate and endDate
+        return v.every(
+          (date) => date >= this.startDate && date <= this.endDate
+        );
+      },
+      message: "Dates must be between startDate and endDate",
     },
   },
-  {
-    timestamps: true, // Automatically manages createdAt and updatedAt fields
-  }
-);
+  meals: [MealSchema],
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+});
 
-// Create the MealPlan model
-const MealPlan = mongoose.model("MealPlan", mealPlanSchema);
-
+const MealPlan = mongoose.model("MealPlan", MealPlanSchema);
 export default MealPlan;

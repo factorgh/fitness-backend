@@ -1,21 +1,12 @@
 import MealPlan from "../models/mealplan.model.js";
-import notification from "../models/notifications.js";
-import moment from "moment";
+import Notification from "../models/notifications.js";
 
-// export const createMealPlan = async (req, res) => {
-//   try {
-//     const mealPlan = new MealPlan(req.body);
-//     await mealPlan.save();
-//     res.status(201).json(mealPlan);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// };
+import moment from "moment";
 
 export const getMealPlan = async (req, res) => {
   try {
     const mealPlan = await MealPlan.findById(req.params.id).populate(
-      "createdBy trainees recipes"
+      "createdBy trainees"
     );
     if (!mealPlan) {
       return res.status(404).json({ message: "Meal Plan not found" });
@@ -44,15 +35,72 @@ export const getMealPlans = async (req, res) => {
 
 export const updateMealPlan = async (req, res) => {
   try {
-    const mealPlan = await MealPlan.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!mealPlan) {
-      return res.status(404).json({ message: "Meal Plan not found" });
+    const { mealPlanId } = req.params;
+    const {
+      name,
+      duration,
+      startDate,
+      endDate,
+      recurrence, // Recurrence details
+      meals, // Updated meals array
+      customRules, // Updated custom rules
+      trainees, // Updated list of trainees
+    } = req.body;
+
+    // Validate date range if the duration is "Custom"
+    if (duration === "Custom" && (!startDate || !endDate)) {
+      return res
+        .status(400)
+        .json({ error: "Start and End date are required for custom plans." });
     }
-    res.json(mealPlan);
+
+    // Check for existing meal plans that conflict with the updated one
+    const conflictingMealPlans = await MealPlan.find({
+      _id: { $ne: mealPlanId }, // Exclude the current meal plan being updated
+      trainees: { $in: trainees },
+      $or: [
+        {
+          $and: [
+            { startDate: { $lte: new Date(endDate) } },
+            { endDate: { $gte: new Date(startDate) } },
+          ],
+        },
+      ],
+    });
+
+    if (conflictingMealPlans.length > 0) {
+      return res.status(400).json({
+        error:
+          "A conflicting meal plan already exists for the selected trainees within the specified date range.",
+      });
+    }
+
+    // Find and update the meal plan
+    const updatedMealPlan = await MealPlan.findByIdAndUpdate(
+      mealPlanId,
+      {
+        name,
+        duration,
+        startDate,
+        endDate,
+        recurrence, // Updated recurrence details
+        meals, // Updated meals array
+        customRules, // Updated custom rules
+        trainees, // Updated trainees list
+      },
+      { new: true } // Return the updated meal plan
+    );
+
+    if (!updatedMealPlan) {
+      return res.status(404).json({ error: "Meal plan not found" });
+    }
+
+    return res.status(200).json(updatedMealPlan);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Failed to update meal plan", details: error.message });
   }
 };
 
@@ -74,9 +122,7 @@ export const getMealPlansByTrainee = async (req, res) => {
     const { traineeId } = req.params;
 
     // Find meal plans where the trainee is part of the trainees array
-    const mealPlans = await MealPlan.find({ trainees: traineeId }).populate(
-      "recipeAllocations.recipeId"
-    );
+    const mealPlans = await MealPlan.find({ trainees: traineeId });
 
     res.json(mealPlans);
   } catch (err) {
@@ -85,78 +131,201 @@ export const getMealPlansByTrainee = async (req, res) => {
   }
 };
 
-// /Notification system management
-
+// /Notification system managementexport
 export const createMealPlan = async (req, res) => {
   try {
-    const {
-      name,
-      duration,
-      startDate,
-      endDate,
-      days,
-      periods,
-      recipeAllocations,
-      trainees,
-    } = req.body;
+    const { name, trainees, duration, startDate, endDate, meals, createdBy } =
+      req.body;
 
-    const mealPlan = new MealPlan({
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start) || isNaN(end)) {
+      return res.status(400).json({ message: "Invalid startDate or endDate" });
+    }
+
+    // Generate all dates between startDate and endDate
+    const datesArray = getDatesInRange(start, end);
+
+    const mealPlan = {
       name,
-      duration,
-      startDate,
-      endDate,
-      days,
-      periods,
-      recipeAllocations,
       trainees,
-      createdBy: req.user.id,
+      duration,
+      startDate: start,
+      endDate: end,
+      datesArray,
+      meals: [],
+      createdBy,
+    };
+
+    // Process each meal independently (without impacting other meals)
+    meals.forEach((meal) => {
+      const { recurrence, mealType, recipes, timeOfDay } = meal;
+      const recurrenceStartDate = new Date(recurrence.date); // When recurrence starts for this meal
+
+      // For each date in the range, check if the meal's recurrence applies
+      datesArray.forEach((currentDate) => {
+        if (
+          shouldApplyRecurrence(recurrence, recurrenceStartDate, currentDate)
+        ) {
+          // Check if the current date is an exception for this specific meal
+          if (!isAfterExceptionDate(recurrence.exceptions, currentDate)) {
+            // Multiple meals can occur on the same day, so no need to prevent duplicates by meal type
+            mealPlan.meals.push({
+              mealType,
+              recipes,
+              timeOfDay,
+              date: currentDate,
+              recurrence, // Keep recurrence info in the meal
+            });
+          }
+        }
+      });
     });
 
-    await mealPlan.save();
+    // Save the meal plan to the database
+    const newMealPlan = new MealPlan(mealPlan);
+    await newMealPlan.save();
 
-    // Notify trainees about the new meal plan
-    for (const traineeId of trainees) {
-      await createNotificationForMealPlan(mealPlan, traineeId);
-    }
-
-    res.status(201).json(mealPlan);
+    // Return the newly created meal plan
+    res.status(201).json({
+      message: "Meal plan created successfully!",
+      mealPlan: newMealPlan,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error creating meal plan", error: error.message });
   }
 };
 
-const createNotificationForMealPlan = async (mealPlan, traineeId) => {
+// Helper function: Generate all dates between startDate and endDate
+const getDatesInRange = (startDate, endDate) => {
+  const dates = [];
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return dates;
+};
+
+// Helper function: Check if the meal recurrence applies to a specific date
+const shouldApplyRecurrence = (
+  recurrence,
+  recurrenceStartDate,
+  currentDate
+) => {
+  const dayOfWeek = currentDate.getDay();
+
+  switch (recurrence.option) {
+    case "every_day":
+      return true;
+    case "weekly":
+      return recurrenceStartDate.getDay() === dayOfWeek;
+    case "bi_weekly":
+      return isBiWeekly(recurrenceStartDate, currentDate);
+    case "custom_weekly":
+      return recurrence.customDays.includes(dayOfWeek); // customDays is an array like [1, 3, 5]
+    case "monthly":
+      return recurrenceStartDate.getDate() === currentDate.getDate();
+    default:
+      return false;
+  }
+};
+
+// Helper function: Check bi-weekly recurrence logic
+const isBiWeekly = (startDate, currentDate) => {
+  const diffTime = Math.abs(currentDate - startDate);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays % 14 === 0; // Recur every 14 days
+};
+
+// Helper function: Check if the current date is after an exception
+const isAfterExceptionDate = (exceptions, currentDate) => {
+  if (!exceptions || exceptions.length === 0) return false; // No exceptions
+  return exceptions.some(
+    (exceptionDate) =>
+      new Date(exceptionDate).toDateString() === currentDate.toDateString()
+  );
+};
+
+const createNotificationForMealPlan = async (
+  mealPlan,
+  traineeId,
+  createdBy
+) => {
   const { startDate, endDate, days, recipeAllocations } = mealPlan;
 
-  // Iterate through each day within the selected range
-  for (let day of days) {
-    let currentDate = moment(startDate);
-    const dayIndex = getDayIndex(day);
+  // Create a single notification message for the meal plan
+  const message = `You have a new meal plan from ${moment(startDate).format(
+    "YYYY-MM-DD"
+  )} to ${moment(endDate).format(
+    "YYYY-MM-DD"
+  )}. It includes meals on ${days.join(", ")}.`;
 
-    while (currentDate.isSameOrBefore(endDate)) {
-      // Check if the current date matches the day index
-      if (currentDate.day() === dayIndex) {
-        for (let allocation of recipeAllocations) {
-          const message = `Reminder: Your meal plan includes ${allocation.recipeId} at ${allocation.allocatedTime}.`;
+  // Create a notification object
+  const notification = new Notification({
+    createdBy: createdBy,
 
-          const notification = new Notification({
-            userId: traineeId,
-            message,
-            type: "MealPlanReminder",
-            createdAt: currentDate.toDate(),
-          });
+    createdAt: new Date(), // Set to the current date and time
+    userId: traineeId,
+    message,
+    type: "Meal Plan Reminder",
+    createdAt: new Date(), // Set to the current date and time
+  });
 
-          await notification.save();
-        }
-      }
-
-      // Move to the next day
-      currentDate.add(1, "day");
-    }
-  }
+  // Save the notification to the database
+  await notification.save();
 };
 
-const getDayIndex = (day) => {
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  return daysOfWeek.indexOf(day);
+// Get mealplans by date
+export const getMealsByDate = async (req, res) => {
+  try {
+    const { date } = req.params; // Get the date from request params
+    const targetDate = new Date(date);
+
+    if (isNaN(targetDate)) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    // Query for meal plans that have the target date in their datesArray
+    const mealPlans = await MealPlan.find({
+      datesArray: targetDate, // Directly query by date
+    });
+
+    if (!mealPlans.length) {
+      return res
+        .status(404)
+        .json({ message: "No meal plans found for this date" });
+    }
+
+    // Filter meals for the specific target date
+    let mealsOnDate = [];
+    mealPlans.forEach((plan) => {
+      const mealsForDate = plan.meals.filter((meal) => {
+        return new Date(meal.date).toDateString() === targetDate.toDateString();
+      });
+      mealsOnDate = mealsOnDate.concat(mealsForDate);
+    });
+
+    if (!mealsOnDate.length) {
+      return res
+        .status(404)
+        .json({ message: "No meals scheduled for this date" });
+    }
+
+    // Return the meals for the specified date
+    res.status(200).json({
+      message: `Meals found for date ${date}`,
+      meals: mealsOnDate,
+    });
+  } catch (error) {
+    // Handle errors
+    res
+      .status(500)
+      .json({ message: "Error fetching meals", error: error.message });
+  }
 };
