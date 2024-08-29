@@ -10,7 +10,7 @@ const recipeAllocationSchema = new Schema({
     required: true,
   },
   allocatedTime: {
-    type: Date,
+    type: Date, // Use Date or another format as per your requirement
     required: true,
   },
 });
@@ -48,13 +48,13 @@ const mealPlanSchema = new Schema(
       },
     },
     days: {
-      type: [String],
+      type: [String], // List of selected days (e.g., ['Monday', 'Tuesday'])
     },
     periods: {
-      type: [String],
+      type: [String], // List of selected periods (e.g., ['Breakfast', 'Lunch'])
     },
     recipeAllocations: {
-      type: [recipeAllocationSchema],
+      type: [recipeAllocationSchema], // Array of RecipeAllocation sub-documents
       default: [],
     },
     trainees: [

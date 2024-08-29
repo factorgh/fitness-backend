@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const ratingSchema = new mongoose.Schema({
-  userId: { type: String, required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
 });
 
@@ -12,12 +12,6 @@ const recipeSchema = new mongoose.Schema({
   description: { type: String, required: true },
   facts: { type: String, required: true },
   imageUrl: { type: String, required: true },
-  status: {
-    type: String,
-    required: true,
-    default: "public",
-    enum: ["public", "private"], // Enum to restrict values
-  },
   ratings: [ratingSchema],
   period: {
     type: String,
