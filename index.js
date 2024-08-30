@@ -11,6 +11,7 @@ import userRoutes from "./routes/user.route.js";
 import recipeRoutes from "./routes/recipe.route.js";
 import mealPlanRoutes from "./routes/mealplan.route.js";
 import notificationsRoutes from "./routes/notifications.route.js";
+import logger from "./utils/logger.js";
 
 // Create path to env instance
 dotenv.config();
@@ -39,6 +40,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(helmet());
 app.use(morgan("dev"));
+
+// Logger for errors
+// Error handling example
+app.use((err, req, res, next) => {
+  logger.error(`Error: ${err.message}`, { stack: err.stack });
+  res.status(500).send("Internal Server Error");
+});
 
 // Global error handler
 app.use((err, req, res, next) => {
