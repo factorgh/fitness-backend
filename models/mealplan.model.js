@@ -39,7 +39,7 @@ const RecurrenceSchema = new mongoose.Schema({
 const MealSchema = new mongoose.Schema({
   mealType: {
     type: String,
-    enum: ["breakfast", "lunch", "dinner", "snack"],
+    enum: ["Breakfast", "Lunch", "Dinner", "Snack"],
     required: true,
   },
   recipes: [
