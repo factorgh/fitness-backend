@@ -18,7 +18,7 @@ router.post("/", auth, createMealPlan);
 // r
 // Param meal plans
 router.get("/meals/:date", getMealsByDate);
-router.get("/meals/draft", getDraftMealPlans);
+router.get("/meals/mealplan/draft", getDraftMealPlans);
 
 // Other routes
 router.get("/trainee/:traineeId", getMealPlansByTrainee);
