@@ -332,18 +332,65 @@ export const getMealsByDate = async (req, res) => {
 // Get plans for a which is Draft is true
 export const getDraftMealPlans = async (req, res) => {
   try {
-    const mealPlans = await MealPlan.find({ isDraft: true });
-    if (!mealPlans.length) {
-      return res.status(404).json({ message: "No draft meal plans found" });
+    const mealPlan = await MealPlan.findOne({ isDraft: true });
+    if (!mealPlan) {
+      return res.status(404).json({ message: "No draft meal plan found" });
     }
     res.status(200).json({
-      message: "Draft meal plans found",
-      mealPlans,
+      mealPlan,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error fetching draft meal plans",
+      message: "Error fetching draft meal plan",
       error: error.message,
     });
+  }
+};
+
+export const updateMealsByDate = async (req, res) => {
+  try {
+    const { date, meals } = req.body; // Expect the date and new meals from the request body
+    const targetDate = new Date(date);
+
+    if (isNaN(targetDate)) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    // Find meal plans that have the target date in their datesArray
+    const mealPlans = await MealPlan.find({
+      datesArray: targetDate,
+    });
+
+    if (!mealPlans.length) {
+      return res
+        .status(404)
+        .json({ message: "No meal plans found for this date" });
+    }
+
+    // Update meals for each meal plan
+    for (const plan of mealPlans) {
+      // Find and update meals for the target date
+      const updatedMeals = plan.meals.map((meal) => {
+        if (new Date(meal.date).toDateString() === targetDate.toDateString()) {
+          // Update meal details here
+          const newMeal = meals.find((m) => m.id === meal.id);
+          return newMeal ? { ...meal, ...newMeal } : meal;
+        }
+        return meal;
+      });
+
+      // Update the meal plan with the new meals
+      plan.meals = updatedMeals;
+      await plan.save();
+    }
+
+    res.status(200).json({
+      message: `Meals updated for date ${date}`,
+    });
+  } catch (error) {
+    // Handle errors
+    res
+      .status(500)
+      .json({ message: "Error updating meals", error: error.message });
   }
 };
