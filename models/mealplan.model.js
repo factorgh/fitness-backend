@@ -52,6 +52,10 @@ const MealSchema = new mongoose.Schema({
     type: String, // e.g., "08:00 AM", "12:00 PM", "07:00 PM"
     required: true,
   },
+  isDraft: {
+    type: Boolean,
+    default: false,
+  },
   recurrence: RecurrenceSchema,
   date: {
     type: Date,
@@ -104,6 +108,10 @@ const MealPlanSchema = new mongoose.Schema(
         },
         message: "Dates must be between startDate and endDate",
       },
+    },
+    isDraft: {
+      type: Boolean,
+      default: false,
     },
     meals: [MealSchema],
     createdBy: {
