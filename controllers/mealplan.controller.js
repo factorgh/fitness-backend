@@ -332,7 +332,15 @@ export const getMealsByDate = async (req, res) => {
 // Get plans for a which is Draft is true
 export const getDraftMealPlans = async (req, res) => {
   try {
-    const mealPlan = await MealPlan.findOne({ isDraft: true });
+    const mealPlan = await MealPlan.findOne({ isDraft: true })
+      .populate({
+        path: "meals",
+        populate: {
+          path: "recipes",
+          model: "Recipe",
+        },
+      })
+      .exec();
     if (!mealPlan) {
       return res.status(404).json({ message: "No draft meal plan found" });
     }
