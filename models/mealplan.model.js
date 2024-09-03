@@ -54,7 +54,7 @@ const MealSchema = new mongoose.Schema({
   },
   isDraft: {
     type: Boolean,
-    default: false,
+    default: true,
   },
   recurrence: RecurrenceSchema,
   date: {
@@ -111,7 +111,7 @@ const MealPlanSchema = new mongoose.Schema(
     },
     isDraft: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     meals: [MealSchema],
     createdBy: {
