@@ -329,3 +329,21 @@ export const getMealsByDate = async (req, res) => {
       .json({ message: "Error fetching meals", error: error.message });
   }
 };
+// Get plans for a which is Draft is true
+export const getDraftMealPlans = async (req, res) => {
+  try {
+    const mealPlans = await MealPlan.find({ isDraft: true });
+    if (!mealPlans.length) {
+      return res.status(404).json({ message: "No draft meal plans found" });
+    }
+    res.status(200).json({
+      message: "Draft meal plans found",
+      mealPlans,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching draft meal plans",
+      error: error.message,
+    });
+  }
+};
