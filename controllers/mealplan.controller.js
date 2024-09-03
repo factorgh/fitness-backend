@@ -336,9 +336,7 @@ export const getDraftMealPlans = async (req, res) => {
     if (!mealPlan) {
       return res.status(404).json({ message: "No draft meal plan found" });
     }
-    res.status(200).json({
-      mealPlan,
-    });
+    res.status(200).json(mealPlan);
   } catch (error) {
     res.status(500).json({
       message: "Error fetching draft meal plan",
