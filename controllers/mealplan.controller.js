@@ -219,18 +219,56 @@ const shouldApplyRecurrence = (
   currentDate
 ) => {
   const dayOfWeek = currentDate.getDay();
+  const currentDateString = currentDate.toISOString().split("T")[0]; // Format the current date as 'YYYY-MM-DD'
+
+  // Check if the current date is in the customDates array
+  if (
+    recurrence.customDates &&
+    recurrence.customDates.includes(currentDateString)
+  ) {
+    return true; // Recurrence applies on this specific date
+  }
 
   switch (recurrence.option) {
     case "every_day":
       return true;
+
     case "weekly":
+      if (
+        recurrence.customDates &&
+        recurrence.customDates.includes(currentDateString)
+      ) {
+        return true;
+      }
       return recurrenceStartDate.getDay() === dayOfWeek;
+
     case "bi_weekly":
+      if (
+        recurrence.customDates &&
+        recurrence.customDates.includes(currentDateString)
+      ) {
+        return true;
+      }
       return isBiWeekly(recurrenceStartDate, currentDate);
+
     case "custom_weekly":
+      if (
+        recurrence.customDates &&
+        recurrence.customDates.includes(currentDateString)
+      ) {
+        return true;
+      }
       return recurrence.customDays.includes(dayOfWeek); // customDays is an array like [1, 3, 5]
+
     case "monthly":
+      if (
+        recurrence.customDates &&
+        recurrence.customDates.includes(currentDateString)
+      ) {
+        return true;
+      }
       return recurrenceStartDate.getDate() === currentDate.getDate();
+
     default:
       return false;
   }
