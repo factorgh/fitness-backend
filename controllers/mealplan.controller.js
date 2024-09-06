@@ -133,6 +133,9 @@ export const getMealPlansByTrainee = async (req, res) => {
 
 // /Notification system managementexport
 export const createMealPlan = async (req, res) => {
+  console.log("----------------------Request Body-------------------");
+  console.log(req.body);
+
   try {
     const { name, trainees, duration, startDate, endDate, meals, createdBy } =
       req.body;
