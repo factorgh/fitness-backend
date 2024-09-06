@@ -111,6 +111,7 @@ const MealPlanSchema = new mongoose.Schema(
     },
     isDraft: {
       type: Boolean,
+      enum: [true, false],
       default: true,
     },
     meals: [MealSchema],

@@ -145,7 +145,6 @@ export const createMealPlan = async (req, res) => {
     }
 
     // Generate all dates between startDate and endDate
-    const datesArray = getDatesInRange(start, end);
 
     const mealPlan = {
       name,
@@ -153,35 +152,35 @@ export const createMealPlan = async (req, res) => {
       duration,
       startDate: start,
       endDate: end,
-      datesArray,
-      meals: [],
+      datesArray: [],
+      meals: meals,
       createdBy,
     };
 
-    // Process each meal independently (without impacting other meals)
-    meals.forEach((meal) => {
-      const { recurrence, mealType, recipes, timeOfDay } = meal;
-      const recurrenceStartDate = new Date(recurrence.date); // When recurrence starts for this meal
+    // // Process each meal independently (without impacting other meals)
+    // meals.forEach((meal) => {
+    //   const { recurrence, mealType, recipes, timeOfDay } = meal;
+    //   const recurrenceStartDate = new Date(recurrence.date); // When recurrence starts for this meal
 
-      // For each date in the range, check if the meal's recurrence applies
-      datesArray.forEach((currentDate) => {
-        if (
-          shouldApplyRecurrence(recurrence, recurrenceStartDate, currentDate)
-        ) {
-          // Check if the current date is an exception for this specific meal
-          if (!isAfterExceptionDate(recurrence.exceptions, currentDate)) {
-            // Multiple meals can occur on the same day, so no need to prevent duplicates by meal type
-            mealPlan.meals.push({
-              mealType,
-              recipes,
-              timeOfDay,
-              date: currentDate,
-              recurrence, // Keep recurrence info in the meal
-            });
-          }
-        }
-      });
-    });
+    //   // For each date in the range, check if the meal's recurrence applies
+    //   datesArray.forEach((currentDate) => {
+    //     if (
+    //       shouldApplyRecurrence(recurrence, recurrenceStartDate, currentDate)
+    //     ) {
+    //       // Check if the current date is an exception for this specific meal
+    //       if (!isAfterExceptionDate(recurrence.exceptions, currentDate)) {
+    //         // Multiple meals can occur on the same day, so no need to prevent duplicates by meal type
+    //         mealPlan.meals.push({
+    //           mealType,
+    //           recipes,
+    //           timeOfDay,
+    //           date: currentDate,
+    //           recurrence, // Keep recurrence info in the meal
+    //         });
+    //       }
+    //     }
+    //   });
+    // });
 
     // Save the meal plan to the database
     const newMealPlan = new MealPlan(mealPlan);
@@ -393,7 +392,7 @@ export const getDraftMealPlans = async (req, res) => {
 
 export const updateMealsByDate = async (req, res) => {
   try {
-    const { date, meals } = req.body; // Expect the date and new meals from the request body
+    const { date, meals } = req.body;
     const targetDate = new Date(date);
 
     if (isNaN(targetDate)) {
@@ -436,5 +435,37 @@ export const updateMealsByDate = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error updating meals", error: error.message });
+  }
+};
+
+// Update meals by date
+export const updateMealForDate = async (req, res) => {
+  const { mealPlanId, mealId, updatedMealData } = req.body;
+  try {
+    // Find the meal plan by its ID
+    const mealPlan = await MealPlan.findById(mealPlanId);
+
+    // Find the specific meal by its ID
+    const mealIndex = mealPlan.meals.findIndex(
+      (meal) => meal._id.toString() === mealId
+    );
+
+    if (mealIndex === -1) {
+      throw new Error("Meal not found");
+    }
+
+    // Update the meal details
+    mealPlan.meals[mealIndex] = {
+      ...mealPlan.meals[mealIndex].toObject(),
+      ...updatedMealData,
+    };
+
+    // Save the updated meal plan
+    await mealPlan.save();
+
+    return mealPlan;
+  } catch (error) {
+    console.error("Error updating meal:", error);
+    throw error;
   }
 };
