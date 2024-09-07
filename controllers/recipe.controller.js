@@ -20,7 +20,7 @@ export const createRecipe = async (req, res) => {
 export const getRecipe = async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id)
-      .populate("createdBy ratings.user")
+      .populate("createdBy ratings")
       .lean(); // Convert to plain JavaScript object
 
     if (!recipe) {
