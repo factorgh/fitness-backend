@@ -19,9 +19,9 @@ export const createRecipe = async (req, res) => {
 // Get a single recipe by ID
 export const getRecipe = async (req, res) => {
   try {
-    const recipe = await Recipe.findById(req.params.id)
-      .populate("createdBy ratings")
-      .lean(); // Convert to plain JavaScript object
+    const recipe = await Recipe.findById(req.params.id);
+
+    // Convert to plain JavaScript object
 
     if (!recipe) {
       return res.status(404).json({ message: "Recipe not found" });
