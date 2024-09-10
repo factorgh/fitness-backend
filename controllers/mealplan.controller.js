@@ -281,30 +281,33 @@ const isAfterExceptionDate = (exceptions, currentDate) => {
       new Date(exceptionDate).toDateString() === currentDate.toDateString()
   );
 };
-
 const createNotificationForMealPlan = async (
   mealPlan,
   traineeId,
   createdBy
 ) => {
-  const { startDate, endDate, days, recipeAllocations } = mealPlan;
+  const { startDate, endDate, days = [], recipeAllocations } = mealPlan;
+
+  // Check if days is an array and has elements
+  const daysText =
+    Array.isArray(days) && days.length > 0
+      ? days.join(", ")
+      : "No specific days";
 
   // Create a single notification message for the meal plan
   const message = `You have a new meal plan from ${moment(startDate).format(
     "YYYY-MM-DD"
   )} to ${moment(endDate).format(
     "YYYY-MM-DD"
-  )}. It includes meals on ${days.join(", ")}.`;
+  )}. It includes meals on ${daysText}.`;
 
   // Create a notification object
   const notification = new Notification({
     createdBy: createdBy,
-
     createdAt: new Date(), // Set to the current date and time
     userId: traineeId,
     message,
     type: "Meal Plan Reminder",
-    createdAt: new Date(), // Set to the current date and time
   });
 
   // Save the notification to the database
