@@ -130,8 +130,6 @@ export const getMealPlansByTrainee = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-// /Notification system managementexport
 export const createMealPlan = async (req, res) => {
   console.log("----------------------Request Body-------------------");
   console.log(req.body);
@@ -147,7 +145,19 @@ export const createMealPlan = async (req, res) => {
       return res.status(400).json({ message: "Invalid startDate or endDate" });
     }
 
-    // Generate all dates between startDate and endDate
+    // Check for conflicting meal plans
+    const conflictingPlans = await MealPlan.find({
+      trainees: { $in: trainees },
+      $or: [
+        { startDate: { $lte: end }, endDate: { $gte: start } }, // Overlapping date ranges
+      ],
+    });
+
+    if (conflictingPlans.length > 0) {
+      return res.status(400).json({
+        message: "Conflicting meal plans detected for some trainees.",
+      });
+    }
 
     const mealPlan = {
       name,
@@ -156,38 +166,18 @@ export const createMealPlan = async (req, res) => {
       startDate: start,
       endDate: end,
       datesArray: [],
-      meals: meals,
+      meals,
       createdBy,
     };
-
-    // // Process each meal independently (without impacting other meals)
-    // meals.forEach((meal) => {
-    //   const { recurrence, mealType, recipes, timeOfDay } = meal;
-    //   const recurrenceStartDate = new Date(recurrence.date); // When recurrence starts for this meal
-
-    //   // For each date in the range, check if the meal's recurrence applies
-    //   datesArray.forEach((currentDate) => {
-    //     if (
-    //       shouldApplyRecurrence(recurrence, recurrenceStartDate, currentDate)
-    //     ) {
-    //       // Check if the current date is an exception for this specific meal
-    //       if (!isAfterExceptionDate(recurrence.exceptions, currentDate)) {
-    //         // Multiple meals can occur on the same day, so no need to prevent duplicates by meal type
-    //         mealPlan.meals.push({
-    //           mealType,
-    //           recipes,
-    //           timeOfDay,
-    //           date: currentDate,
-    //           recurrence, // Keep recurrence info in the meal
-    //         });
-    //       }
-    //     }
-    //   });
-    // });
 
     // Save the meal plan to the database
     const newMealPlan = new MealPlan(mealPlan);
     await newMealPlan.save();
+
+    // Send notifications to each trainee
+    for (const traineeId of trainees) {
+      await createNotificationForMealPlan(newMealPlan, traineeId, createdBy);
+    }
 
     // Return the newly created meal plan
     res.status(201).json({
