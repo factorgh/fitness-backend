@@ -15,43 +15,50 @@ const generateUniqueCode = (fullName) => {
   // Combine into the final code
   return `${firstLetter}${randomDigits}${lastLetter}`;
 };
-
 export const registerUser = async (req, res) => {
   try {
     const { fullName, username, password, email } = req.body;
 
     console.log(req.body);
-    // Check if the user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+    // Check if a user with the same email already exists
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // User exists; check if the details match
+      if (user.fullName === fullName && user.username === username) {
+        // Update the user's details
+        if (password) {
+          user.password = await bcrypt.hash(password, 12); // Update password if provided
+        }
+        user.code = generateUniqueCode(fullName); // Generate a new code
+
+        // Save the updated user to the database
+        await user.save();
+      } else {
+        // User exists but details don't match; return an error
+        return res.status(400).json({ message: "User details do not match" });
+      }
+    } else {
+      // User does not exist; create a new user
+      const hashedPassword = await bcrypt.hash(password, 12);
+      const uniqueCode = generateUniqueCode(fullName);
+
+      user = new User({
+        fullName,
+        username,
+        password: hashedPassword,
+        email,
+        code: uniqueCode,
+      });
+
+      // Save the user to the database
+      await user.save();
     }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 12);
-    console.log(hashedPassword);
-
-    // Generate unique code
-    const uniqueCode = generateUniqueCode(fullName);
-
-    // Create a new user
-    const user = new User({
-      fullName,
-      username,
-      password: hashedPassword,
-      email,
-      code: uniqueCode,
-    });
-
-    // Save the user to the database
-    await user.save();
-    console.log(user);
 
     // Generate a JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "90d",
     });
-    console.log(token);
 
     res.status(200).json({ token, user });
   } catch (error) {
@@ -59,6 +66,7 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+
 // Login a user
 export const loginUser = async (req, res) => {
   try {
