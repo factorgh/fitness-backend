@@ -26,17 +26,25 @@ export const registerUser = async (req, res) => {
     if (user) {
       // User exists; check if the details match
       if (user.fullName === fullName && user.username === username) {
-        // Update the user's details
+        // Override certain details if they are provided
         if (password) {
           user.password = await bcrypt.hash(password, 12); // Update password if provided
         }
-        user.code = generateUniqueCode(fullName); // Generate a new code
+
+        user.code = generateUniqueCode(fullName); // Generate a new code (or update it based on logic)
+
+        // You can also override any other details you want here, e.g.:
+        // if (req.body.someField) {
+        //   user.someField = req.body.someField;
+        // }
 
         // Save the updated user to the database
         await user.save();
       } else {
-        // User exists but details don't match; return an error
-        return res.status(400).json({ message: "User details do not match" });
+        // User exists but username or fullName doesn't match; return an error
+        return res
+          .status(400)
+          .json({ message: "Username or fullName do not match" });
       }
     } else {
       // User does not exist; create a new user
