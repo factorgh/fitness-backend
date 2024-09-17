@@ -51,6 +51,7 @@ router.post("/unfollow", auth, unfollowUser);
 
 // User management
 router.post("/", auth, createUser);
+router.get("/trainers", auth, getTrainers);
 router.get("/:id", auth, getUser);
 router.put("/:id", auth, updateUser);
 router.put("/user/role", auth, updateRole);
@@ -63,7 +64,7 @@ router.delete("/user/followers/:followerId", auth, removeTrainerFollower);
 router.get("/trainer/code/:code/follow", auth, getTrainerByCode);
 // endpoints for trainer functionalities
 router.get("/trainer/:id/trainees", auth, getTrainerTrainees);
-router.get("/trainers", auth, getTrainers);
+
 router.get("/trainer/:trainerId/followers", auth, getFollowers);
 router.get("/trainer/:trainerId/following", auth, getFollowingTrainers);
 

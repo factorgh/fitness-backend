@@ -125,6 +125,7 @@ export const getTrainers = async (req, res) => {
 
     res.json(result);
   } catch (error) {
+    console.log("---------------erorr:", error);
     res.status(400).json({ error: error.message });
   }
 };
@@ -445,4 +446,15 @@ export const removeTrainerFollower = async (req, res) => {
   }
 };
 
-// Follow feature new approach
+// Get all trainers
+
+// export const getAllTrainers = async (req, res) => {
+//   User.find({ role: 1 })
+//     .select("fullName username imageUrl")
+//     .exec((err, trainers) => {
+//       if (err) {
+//         return res.status(400).json({ error: err });
+//       }
+//       res.json(trainers);
+//     });
+// };
