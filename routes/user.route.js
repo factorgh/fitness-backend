@@ -19,6 +19,7 @@ import {
   getTraineesFromTrainerMealPlans,
   getFollowersByRole,
   removeTrainerFollower,
+  getUserByName,
 } from "../controllers/user.controller.js";
 import {
   registerUser,
@@ -52,6 +53,7 @@ router.post("/unfollow", auth, unfollowUser);
 // User management
 router.post("/", auth, createUser);
 router.get("/trainers", auth, getTrainers);
+router.get("/user/:username", getUserByName);
 router.get("/:id", auth, getUser);
 router.put("/:id", auth, updateUser);
 router.put("/user/role", auth, updateRole);
