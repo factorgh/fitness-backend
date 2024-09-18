@@ -47,7 +47,7 @@ router.post("/login", loginUser);
 router.post("/change-password", auth, changePassword);
 
 // Follow and unfollow feature
-router.post("/follow", auth, followUser);
+router.post("/follow", followUser);
 router.post("/unfollow", auth, unfollowUser);
 
 // User management
