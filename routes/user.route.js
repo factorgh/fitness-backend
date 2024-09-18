@@ -63,7 +63,7 @@ router.get("/trainers/top-rated-trainers", auth, getTopTrainers);
 router.get("/mealplan/trainees/details", auth, traineesDetails);
 router.delete("/user/followers/:followerId", auth, removeTrainerFollower);
 
-router.get("/trainer/code/:code/follow", auth, getTrainerByCode);
+router.get("/trainer/code/:code/follow", getTrainerByCode);
 // endpoints for trainer functionalities
 router.get("/trainer/:id/trainees", auth, getTrainerTrainees);
 
