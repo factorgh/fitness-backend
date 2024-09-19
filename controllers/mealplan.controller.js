@@ -296,9 +296,9 @@ const createNotificationForMealPlan = async (
       allMealDates.add(moment(meal.date).format("YYYY-MM-DD"));
     }
 
-    // If recurrence is defined, calculate future dates based on the recurrence pattern
+    // Handle recurrence logic
     if (meal.recurrence) {
-      // Example for handling weekly recurrence (you'll need to adapt this for each type)
+      // Handle weekly recurrence
       if (meal.recurrence.option === "weekly") {
         let current = moment(meal.recurrence.date);
         while (current.isBefore(moment(endDate))) {
@@ -307,7 +307,7 @@ const createNotificationForMealPlan = async (
         }
       }
 
-      // Handle custom days (e.g., custom_weekly)
+      // Handle custom weekly recurrence
       if (
         meal.recurrence.option === "custom_weekly" &&
         meal.recurrence.customDays.length > 0
@@ -334,26 +334,35 @@ const createNotificationForMealPlan = async (
   });
 
   // Convert Set to sorted array of dates
+  // Convert Set to sorted array of dates
   const sortedMealDates = Array.from(allMealDates).sort(
     (a, b) => new Date(a) - new Date(b)
   );
 
-  // Generate notifications for each meal date
-  for (const date of sortedMealDates) {
-    const message = `You have a meal scheduled for ${date}.`;
+  // Combine all the meal dates into a single string for the notification message
+  const mealDatesText =
+    sortedMealDates.length > 0
+      ? sortedMealDates.join(", ")
+      : "no specific dates";
 
-    const notification = new Notification({
-      createdBy,
-      createdAt: new Date(),
-      userId: traineeId,
-      message,
-      type: "Meal Plan Reminder",
-    });
+  // Create a single notification summarizing the meal plan
+  const message = `You have a new meal plan from ${moment(startDate).format(
+    "YYYY-MM-DD"
+  )} to ${moment(endDate).format(
+    "YYYY-MM-DD"
+  )}. Meals are scheduled on the following dates: ${mealDatesText}.`;
 
-    await notification.save();
-  }
+  // Create the notification object
+  const notification = new Notification({
+    createdBy,
+    createdAt: new Date(), // Set to the current date and time
+    userId: traineeId,
+    message,
+    type: "Meal Plan Reminder",
+  });
+
+  await notification.save();
 };
-
 
 // Get mealplans by date
 export const getMealsByDate = async (req, res) => {
