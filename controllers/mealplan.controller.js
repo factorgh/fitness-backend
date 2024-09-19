@@ -286,33 +286,74 @@ const createNotificationForMealPlan = async (
   traineeId,
   createdBy
 ) => {
-  const { startDate, endDate, days = [], recipeAllocations } = mealPlan;
+  const { startDate, endDate, meals } = mealPlan;
 
-  // Check if days is an array and has elements
-  const daysText =
-    Array.isArray(days) && days.length > 0
-      ? days.join(", ")
-      : "No specific days";
+  // Collect all unique meal dates from the plan
+  const allMealDates = new Set();
 
-  // Create a single notification message for the meal plan
-  const message = `You have a new meal plan from ${moment(startDate).format(
-    "YYYY-MM-DD"
-  )} to ${moment(endDate).format(
-    "YYYY-MM-DD"
-  )}. It includes meals on ${daysText}.`;
+  meals.forEach((meal) => {
+    if (meal.date) {
+      allMealDates.add(moment(meal.date).format("YYYY-MM-DD"));
+    }
 
-  // Create a notification object
-  const notification = new Notification({
-    createdBy: createdBy,
-    createdAt: new Date(), // Set to the current date and time
-    userId: traineeId,
-    message,
-    type: "Meal Plan Reminder",
+    // If recurrence is defined, calculate future dates based on the recurrence pattern
+    if (meal.recurrence) {
+      // Example for handling weekly recurrence (you'll need to adapt this for each type)
+      if (meal.recurrence.option === "weekly") {
+        let current = moment(meal.recurrence.date);
+        while (current.isBefore(moment(endDate))) {
+          allMealDates.add(current.format("YYYY-MM-DD"));
+          current = current.add(1, "week");
+        }
+      }
+
+      // Handle custom days (e.g., custom_weekly)
+      if (
+        meal.recurrence.option === "custom_weekly" &&
+        meal.recurrence.customDays.length > 0
+      ) {
+        let current = moment(meal.recurrence.date);
+        while (current.isBefore(moment(endDate))) {
+          meal.recurrence.customDays.forEach((day) => {
+            const customDate = moment(current).day(day); // Adjust to the custom day
+            if (customDate.isBetween(startDate, endDate, "day", "[]")) {
+              allMealDates.add(customDate.format("YYYY-MM-DD"));
+            }
+          });
+          current = current.add(1, "week");
+        }
+      }
+
+      // Handle exceptions (skipping certain dates)
+      if (meal.recurrence.exceptions && meal.recurrence.exceptions.length > 0) {
+        meal.recurrence.exceptions.forEach((exception) => {
+          allMealDates.delete(moment(exception).format("YYYY-MM-DD"));
+        });
+      }
+    }
   });
 
-  // Save the notification to the database
-  await notification.save();
+  // Convert Set to sorted array of dates
+  const sortedMealDates = Array.from(allMealDates).sort(
+    (a, b) => new Date(a) - new Date(b)
+  );
+
+  // Generate notifications for each meal date
+  for (const date of sortedMealDates) {
+    const message = `You have a meal scheduled for ${date}.`;
+
+    const notification = new Notification({
+      createdBy,
+      createdAt: new Date(),
+      userId: traineeId,
+      message,
+      type: "Meal Plan Reminder",
+    });
+
+    await notification.save();
+  }
 };
+
 
 // Get mealplans by date
 export const getMealsByDate = async (req, res) => {
