@@ -321,6 +321,27 @@ export const getUserByName = async (req, res) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+export const getUserByEmail = async (req, res) => {
+  try {
+    const { email } = req.params; // Assume code is passed as a URL parameter
+
+    // Find the user by code with role 1
+    const user = await User.findOne({ email }).select("-password");
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({
+          message: "User not found or does not have the required email ",
+        });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
 
 // Get 10 top-rated trainers excluding the current user
 export const getTopTrainers = async (req, res) => {
