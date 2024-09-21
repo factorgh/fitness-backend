@@ -5,11 +5,19 @@ import User from "../models/user.model.js";
 const router = express.Router();
 
 export const getUserByEmail = async (email) => {
+  console.log("------------------Email passed  In-----------------");
+  console.log(email);
+
   try {
     const user = await User.findOne({ email });
     if (!user) {
       throw new Error("User not found");
     }
+
+    console.log(
+      "--------------------User detail before Email sent------------------"
+    );
+    console.log(user);
     return user;
   } catch (error) {
     throw new Error(error.message);
@@ -73,7 +81,6 @@ export const getUserByEmail = async (email) => {
 // });
 
 // New mail
-
 router.post("/send-email", async (req, res) => {
   const { to, userEmail } = req.body;
 
@@ -81,9 +88,16 @@ router.post("/send-email", async (req, res) => {
     return res.status(400).json({ message: "Invalid email or user email" });
   }
 
-  // Fetch the user details from the database
+  // Fetch the trainer and trainee details from the database
   const trainer = await getUserByEmail(to);
   const trainee = await getUserByEmail(userEmail);
+
+  if (!trainer) {
+    return res.status(404).json({ message: "Trainer not found" });
+  }
+  if (!trainee) {
+    return res.status(404).json({ message: "Trainee does not exist" });
+  }
 
   try {
     const emailData = {
@@ -91,54 +105,57 @@ router.post("/send-email", async (req, res) => {
       from: "burchellsbale@gmail.com",
       subject: `Fitness Trainer Request (Fitness Recipe)`,
       html: `
-  <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; background-color: #f4f4f4;">
-    <div style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-      <div style="background-color: #2c3e50; padding: 20px; text-align: center;">
-        <h1 style="color: #ecf0f1; margin: 0;">Fitness Recipe</h1>
-      </div>
-      <div style="padding: 20px;">
-        <p style="font-size: 16px; line-height: 1.5;">
-          Dear ${trainer.name},
-        </p>
-        <p style="font-size: 16px; line-height: 1.5;">
-          ${trainee.name} has requested to connect with you on the FitnessTrainer App. Click one of the links below to respond via email.
-        </p>
-        
-        <!-- First Link: A message to accept the request -->
-        <p style="font-size: 16px; line-height: 1.5;">
-          <strong>1. Accept the Request:</strong><br>
-          Click here to accept the connection request: 
-          <a href="mailto:${userEmail}?subject=Accept%20Request&body=Hi%20${trainee.name},%20I%20am%20accepting%20your%20connection%20request." style="color: #2980b9;">Accept Request</a>.
-        </p>
-        
-        <!-- Second Link: A message to decline the request -->
-        <p style="font-size: 16px; line-height: 1.5;">
-          <strong>2. Decline the Request:</strong><br>
-          Click here to decline the connection request: 
-          <a href="mailto:${userEmail}?subject=Decline%20Request&body=Hi%20${trainee.name},%20I%20am%20declining%20your%20connection%20request." style="color: #2980b9;">Decline Request</a>.
-        </p>
-        
-        <p style="font-size: 16px; line-height: 1.5;">
-          Thank you for considering this request.
-        </p>
-        
-        <p style="font-size: 16px; line-height: 1.5;">
-          Best regards,<br>
-          Fitness Recipe Team
-        </p>
-      </div>
-      <div style="background-color: #ecf0f1; padding: 10px; text-align: center;">
-        <p style="font-size: 14px; color: #7f8c8d; margin: 0;">&copy; 2024 Fitness Recipe. All rights reserved.</p>
-      </div>
-    </div>
-  </div>
-  `,
+        <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; background-color: #f4f4f4;">
+          <div style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+            <div style="background-color: #2c3e50; padding: 20px; text-align: center;">
+              <h1 style="color: #ecf0f1; margin: 0;">Fitness Recipe</h1>
+            </div>
+            <div style="padding: 20px;">
+              <p style="font-size: 16px; line-height: 1.5;">
+                Dear ${trainer.fullName},
+              </p>
+              <p style="font-size: 16px; line-height: 1.5;">
+                ${trainee.fullName} has requested to connect with you on the FitnessTrainer App. Click on the link below to allow them to connect, see your private recipes, and also be able to get on your meal plans.
+                If you do not wish to connect with the trainee, click decline here or simply ignore this email.
+              </p>
+              
+              <!-- First Link: A message to accept the request -->
+             
+<p style="font-size: 16px; line-height: 1.5;">
+  <strong>1. Accept the Request:</strong><br>
+  Click here to accept the connection request: 
+  <a href="mailto:${userEmail}?subject=Accept%20Request&body=Hi%20${trainee.username},%20I%20accept%20your%20connection%20request.%20My%20code%20is%20${trainer.code}.%20My's%20username%20is%20${trainer.username}%20and%20enter%20code%20to%20have%20access}." style="color: #2980b9;">Accept Request</a>.
+</p>
+
+              <!-- Second Link: A message to decline the request -->
+              <p style="font-size: 16px; line-height: 1.5;">
+                <strong>2. Decline the Request:</strong><br>
+                Click here to decline the connection request: 
+                <a href="mailto:${userEmail}?subject=Decline%20Request&body=Hi%20${trainee.fullName},%20I%20am%20declining%20your%20connection%20request." style="color: #2980b9;">Decline Request</a>.
+              </p>
+              
+              <p style="font-size: 16px; line-height: 1.5;">
+                Thank you for considering this request.
+              </p>
+              
+              <p style="font-size: 16px; line-height: 1.5;">
+                Best regards,<br>
+                Fitness Recipe Team
+              </p>
+            </div>
+            <div style="background-color: #ecf0f1; padding: 10px; text-align: center;">
+              <p style="font-size: 14px; color: #7f8c8d; margin: 0;">&copy; 2024 Fitness Recipe. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      `,
     };
 
+    // Send the email with user details included
     await sendEmail(emailData);
-    res.status(200).send("Email sent");
+    res.status(200).send("Email sent successfully with user details.");
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Failed to send email");
   }
 });
