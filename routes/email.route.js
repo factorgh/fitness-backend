@@ -111,29 +111,18 @@ router.post("/send-email", async (req, res) => {
               <h1 style="color: #ecf0f1; margin: 0;">Fitness Recipe</h1>
             </div>
             <div style="padding: 20px;">
+             
               <p style="font-size: 16px; line-height: 1.5;">
-                Dear ${trainer.fullName},
+               Hello ${trainer.fullName} , ${trainee.fullName} has requested to connect with you on the Fitness Recipe App. Click <span> <a href="mailto:${userEmail}?subject=Request%20Accepted(Fitness%20Recipe)&body=Hi%20${trainee.username},%20I%20accept%20your%20connection%20request.%20My%20code%20is%20${trainer.code}%20and%20my%20username%20is%20${trainer.username}.%20You%20can%20enter%20this%20code%20to%20gain%20access." style="color: #2980b9;font-weight: 700;">accept request</a></span> to connect and allow ${trainee.username} see your private recipes, and also be able to get on your meal plans.
+               
               </p>
+              
               <p style="font-size: 16px; line-height: 1.5;">
-                ${trainee.fullName} has requested to connect with you on the FitnessTrainer App. Click on the link below to allow them to connect, see your private recipes, and also be able to get on your meal plans.
-                If you do not wish to connect with the trainee, click decline here or simply ignore this email.
+              If you do not wish to connect with the ${trainee.fullName}, click <span><a href="mailto:${userEmail}?subject=Decline%20Request&body=Hi%20${trainee.fullName},%20I%20am%20declining%20your%20connection%20request." style="color: #2980b9;font-weight: 700;">decline here</a>.</span> or simply ignore this email.
               </p>
               
               <!-- First Link: A message to accept the request -->
              
-<p style="font-size: 16px; line-height: 1.5;">
-  <strong>1. Accept the Request:</strong><br>
-  Click here to accept the connection request: 
-  <a href="mailto:${userEmail}?subject=Accept%20Request&body=Hi%20${trainee.username},%20I%20accept%20your%20connection%20request.%20My%20code%20is%20${trainer.code}.%20My's%20username%20is%20${trainer.username}%20and%20enter%20code%20to%20have%20access}." style="color: #2980b9;">Accept Request</a>.
-</p>
-
-              <!-- Second Link: A message to decline the request -->
-              <p style="font-size: 16px; line-height: 1.5;">
-                <strong>2. Decline the Request:</strong><br>
-                Click here to decline the connection request: 
-                <a href="mailto:${userEmail}?subject=Decline%20Request&body=Hi%20${trainee.fullName},%20I%20am%20declining%20your%20connection%20request." style="color: #2980b9;">Decline Request</a>.
-              </p>
-              
               <p style="font-size: 16px; line-height: 1.5;">
                 Thank you for considering this request.
               </p>
